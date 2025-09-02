@@ -1,5 +1,3 @@
-# Timber-Sale-Listings
-This viewer enables interactive viewing of available timber sales
 # Timber Sale Areas Management Documentation
 
 ## Overview
