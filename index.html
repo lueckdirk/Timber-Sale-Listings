@@ -14,8 +14,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.21/js/jquery.dataTables.min.js"></script>
     
-    <!-- Bootstrap CSS -->
+    <!-- Bootstrap CSS and JS -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.0/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.0/js/bootstrap.min.js"></script>
     
     <style>
         body {
@@ -31,130 +32,96 @@
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
         
-        .header h1 {
-            margin: 0;
-            font-weight: 300;
+        /* Auto-update notification styles */
+        .update-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            max-width: 400px;
         }
         
-        .header p {
-            margin: 0.5rem 0 0 0;
-            opacity: 0.9;
-        }
-        
-        .main-container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 0 1rem;
-        }
-        
-        .map-container {
-            height: 600px;
+        .loading-indicator {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255,255,255,0.95);
+            padding: 2rem;
             border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            margin-bottom: 2rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            z-index: 10000;
         }
         
-        #map {
-            height: 100%;
-            width: 100%;
-        }
-        
-        .controls-panel {
-            background: white;
-            border-radius: 8px;
-            padding: 1.5rem;
-            margin-bottom: 2rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        
-        .data-table-container {
-            background: white;
-            border-radius: 8px;
-            padding: 1.5rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            margin-bottom: 2rem;
-        }
-        
-        .btn-forest {
-            background-color: #4a7c24;
-            border-color: #4a7c24;
-            color: white;
-        }
-        
-        .btn-forest:hover {
-            background-color: #2d5016;
-            border-color: #2d5016;
-            color: white;
-        }
-        
-        .stats-card {
-            background: white;
-            border-radius: 8px;
-            padding: 1.5rem;
-            text-align: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        .last-updated {
+            background: #e8f5e8;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            color: #2d5016;
             margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         
-        .stats-number {
-            font-size: 2rem;
-            font-weight: bold;
-            color: #4a7c24;
-        }
-        
-        .stats-label {
-            color: #6c757d;
+        .config-info {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
             font-size: 0.9rem;
         }
         
-        .leaflet-popup-content {
-            max-width: 300px;
+        .config-url {
+            font-family: 'Courier New', monospace;
+            background: #f8f9fa;
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            word-break: break-all;
+        }
+        
+        /* Rest of existing styles */
+        .main-container { max-width: 1400px; margin: 0 auto; padding: 0 1rem; }
+        .map-container { height: 600px; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 2rem; }
+        #map { height: 100%; width: 100%; }
+        .controls-panel { background: white; border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .data-table-container { background: white; border-radius: 8px; padding: 1.5rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 2rem; }
+        .btn-forest { background-color: #4a7c24; border-color: #4a7c24; color: white; }
+        .btn-forest:hover { background-color: #2d5016; border-color: #2d5016; color: white; }
+        .stats-card { background: white; border-radius: 8px; padding: 1.5rem; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 1rem; }
+        .stats-number { font-size: 2rem; font-weight: bold; color: #4a7c24; }
+        .stats-label { color: #6c757d; font-size: 0.9rem; }
+        
+        .data-submission-area {
+            border: 2px solid #4a7c24;
+            border-radius: 8px;
+            background: #f8f9fa;
+            transition: all 0.3s ease;
+        }
+        
+        .data-submission-area:hover {
+            border-color: #2d5016;
+            background: #e8f5e8;
+            box-shadow: 0 2px 8px rgba(45, 80, 22, 0.1);
         }
         
         .popup-title {
             font-weight: bold;
-            color: #4a7c24;
             margin-bottom: 0.5rem;
+            color: #2d5016;
+            font-size: 1.1rem;
         }
         
         .popup-field {
             margin-bottom: 0.3rem;
-            font-size: 0.9rem;
         }
         
         .popup-label {
-            font-weight: 600;
-            color: #495057;
-        }
-        
-        #saleAreasTable {
-            font-size: 0.9rem;
-        }
-        
-        #saleAreasTable th {
-            background-color: #f8f9fa;
-            font-weight: 600;
-            border-bottom: 2px solid #dee2e6;
-        }
-        
-        #saleAreasTable tbody tr:hover {
-            background-color: #f1f8e9;
-            cursor: pointer;
-        }
-        
-        .file-upload-area {
-            border: 2px dashed #4a7c24;
-            border-radius: 8px;
-            padding: 2rem;
-            text-align: center;
-            background-color: #f8f9fa;
-            margin-bottom: 1rem;
-        }
-        
-        .file-upload-area.dragover {
-            background-color: #e8f5e8;
-            border-color: #2d5016;
+            font-weight: bold;
+            color: #4a7c24;
         }
     </style>
 </head>
@@ -167,6 +134,36 @@
     </div>
     
     <div class="main-container">
+        <!-- Loading Indicator -->
+        <div id="loadingIndicator" class="loading-indicator" style="display: none;">
+            <div class="text-center">
+                <div class="spinner-border text-success" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>
+                <div class="mt-2">Loading timber sale data...</div>
+            </div>
+        </div>
+        
+        <!-- Configuration Info -->
+        <div id="configInfo" class="config-info" style="display: none;">
+            <strong>⚙️ Configuration Status:</strong><br>
+            <div class="mt-2">
+                <strong>Data URL:</strong><br>
+                <div class="config-url" id="dataUrlDisplay"></div>
+            </div>
+            <div class="mt-2 text-muted">
+                <small>💡 To update this configuration, modify the CONFIG object in the HTML file and republish to GitHub Pages.</small>
+            </div>
+        </div>
+        
+        <!-- Last Updated Info -->
+        <div id="lastUpdated" class="last-updated" style="display: none;">
+            <span>📅 Data last updated: <span id="updateTime"></span></span>
+            <button class="btn btn-sm btn-outline-success" onclick="checkForUpdates()" title="Check for new data from QGIS">
+                🔄 Check for Updates
+            </button>
+        </div>
+        
         <!-- Statistics Cards -->
         <div class="row mb-4">
             <div class="col-md-3">
@@ -195,29 +192,46 @@
             </div>
         </div>
         
-        <!-- File Upload Section -->
-        <div class="controls-panel">
-            <h4>📁 Load Your Data</h4>
-            <p class="mb-3">Upload your GeoJSON file exported from QGIS to view timber sale areas on the map and table below.</p>
+        <!-- Data Submission Panel (if auto-load fails) -->
+        <div class="controls-panel" id="uploadPanel" style="display: none;">
+            <h4>📝 Submit New Timber Data</h4>
+            <p class="mb-3">Automatic loading from GitHub failed. You can submit new timber sale data or load sample data to test the viewer.</p>
             
-            <div class="file-upload-area" id="uploadArea">
-                <div>
-                    <strong>Drop your GeoJSON file here</strong><br>
-                    <span class="text-muted">or</span><br>
-                    <input type="file" id="fileInput" accept=".geojson,.json" style="display: none;">
-                    <button class="btn btn-forest mt-2" onclick="document.getElementById('fileInput').click()">
-                        Choose File
-                    </button>
+            <div class="data-submission-area">
+                <div class="text-center p-4">
+                    <div class="mb-3">
+                        <h5>📋 Submit Timber Sale Data</h5>
+                        <p class="text-muted">Use our data submission form to add new timber sale areas to the system.</p>
+                    </div>
+                    <a href="https://docs.google.com/forms/d/e/1FAIpQLSf6ADMGnH3Auul5kQGirqTnowojt62OJXYApdyoaffz3AMiAQ/viewform?usp=dialog" 
+                       target="_blank" 
+                       class="btn btn-forest btn-lg">
+                        📝 Submit Timber Data
+                    </a>
+                    <div class="mt-2">
+                        <small class="text-muted">Opens in new window</small>
+                    </div>
                 </div>
             </div>
             
-            <div class="mt-3">
-                <button class="btn btn-forest" onclick="loadSampleData()">
-                    📊 Load Sample Data
-                </button>
-                <button class="btn btn-outline-secondary ml-2" onclick="clearData()">
-                    🗑️ Clear Data
-                </button>
+            <div class="mt-4 pt-3 border-top">
+                <div class="row">
+                    <div class="col-md-4">
+                        <button class="btn btn-outline-success btn-block" onclick="loadSampleData()" title="Load example timber sale data">
+                            📊 Load Sample Data
+                        </button>
+                    </div>
+                    <div class="col-md-4">
+                        <button class="btn btn-outline-secondary btn-block" onclick="clearData()" title="Clear all displayed data">
+                            🗑️ Clear Data
+                        </button>
+                    </div>
+                    <div class="col-md-4">
+                        <button class="btn btn-outline-info btn-block" onclick="retryAutoLoad()" title="Try loading from GitHub again">
+                            🔄 Retry Auto-Load
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
         
@@ -231,7 +245,7 @@
             <h4>📋 Sale Areas Data Table</h4>
             <div class="table-responsive">
                 <table id="saleAreasTable" class="table table-striped table-bordered">
-                    <thead>
+                    <thead class="thead-light">
                         <tr>
                             <th>ID</th>
                             <th>Name</th>
@@ -250,28 +264,43 @@
     </div>
 
     <script>
-        // Initialize map
-        let map = L.map('map').setView([44.5, -89.5], 8); // Default to Wisconsin
+        // Initialize map and global variables
+        let map = L.map('map').setView([44.5, -89.5], 8);
         let saleAreasLayer = null;
         let currentData = [];
+        let lastUpdateTime = null;
+        let updateCheckInterval = null;
         
-        // Add base map
+        // ====================================================================
+        // 🔧 CONFIGURATION - UPDATE THESE FOR YOUR SETUP
+        // ====================================================================
+        const CONFIG = {
+            // TODO: Replace with your actual GitHub repository information
+            githubUsername: 'YOUR-USERNAME',          // Your GitHub username
+            repositoryName: 'timber-viewer',          // Your repository name
+            dataFilePath: 'data/current.geojson',     // Path to data file in repo
+            branchName: 'main',                       // Change to 'test_2' if using that branch
+            
+            // Automatically generated data URL (don't modify this)
+            get dataUrl() {
+                return `https://raw.githubusercontent.com/${this.githubUsername}/${this.repositoryName}/${this.branchName}/${this.dataFilePath}`;
+            },
+            
+            // Update checking settings
+            checkInterval: 30000,    // Check for updates every 30 seconds
+            autoRefresh: true,       // Automatically check for updates
+            showConfigInfo: true     // Show configuration information panel
+        };
+        
+        // ====================================================================
+        // 🗺️ MAP INITIALIZATION
+        // ====================================================================
+        
+        // Add base map tiles
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap contributors',
             maxZoom: 18
         }).addTo(map);
-        
-        // Add satellite layer option
-        let satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-            attribution: 'Esri, Maxar, Earthstar Geographics, USDA FSA, USGS, Aerogrid, IGN, IGP, and the GIS User Community'
-        });
-        
-        // Layer control
-        let baseLayers = {
-            "Street Map": L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'),
-            "Satellite": satelliteLayer
-        };
-        L.control.layers(baseLayers).addTo(map);
         
         // Initialize DataTable
         let dataTable = $('#saleAreasTable').DataTable({
@@ -279,64 +308,286 @@
             pageLength: 10,
             order: [[0, 'asc']],
             columnDefs: [
-                { targets: [2], render: function(data) { return parseFloat(data).toLocaleString() + ' ac'; }},
+                { 
+                    targets: [2], 
+                    render: function(data) { 
+                        return parseFloat(data || 0).toLocaleString() + ' ac'; 
+                    }
+                },
                 { targets: [6], orderable: false }
-            ]
-        });
-        
-        // File upload functionality
-        const uploadArea = document.getElementById('uploadArea');
-        const fileInput = document.getElementById('fileInput');
-        
-        uploadArea.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            uploadArea.classList.add('dragover');
-        });
-        
-        uploadArea.addEventListener('dragleave', () => {
-            uploadArea.classList.remove('dragover');
-        });
-        
-        uploadArea.addEventListener('drop', (e) => {
-            e.preventDefault();
-            uploadArea.classList.remove('dragover');
-            const files = e.dataTransfer.files;
-            if (files.length > 0) {
-                processFile(files[0]);
+            ],
+            language: {
+                emptyTable: "No timber sale areas loaded. Upload a GeoJSON file or load sample data to get started."
             }
         });
         
-        fileInput.addEventListener('change', (e) => {
-            if (e.target.files.length > 0) {
-                processFile(e.target.files[0]);
-            }
+        // ====================================================================
+        // 🚀 APPLICATION STARTUP
+        // ====================================================================
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApplication();
         });
         
-        function processFile(file) {
-            if (!file.name.toLowerCase().endsWith('.geojson') && !file.name.toLowerCase().endsWith('.json')) {
-                alert('Please upload a GeoJSON file (.geojson or .json)');
-                return;
+        function initializeApplication() {
+            console.log('🌲 Timber Sale Areas Viewer - Initializing...');
+            
+            // Show configuration information
+            if (CONFIG.showConfigInfo) {
+                showConfigurationInfo();
             }
             
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const geojsonData = JSON.parse(e.target.result);
-                    loadGeoJSONData(geojsonData);
-                } catch (error) {
-                    alert('Error reading file. Please ensure it\'s a valid GeoJSON file.');
-                    console.error('File parsing error:', error);
-                }
-            };
-            reader.readAsText(file);
+            // Attempt to auto-load data
+            autoLoadData();
+            
+            // Start automatic update checking if enabled
+            if (CONFIG.autoRefresh) {
+                startUpdateChecking();
+            }
+            
+            console.log('✅ Application initialized successfully');
         }
         
+        function showConfigurationInfo() {
+            document.getElementById('dataUrlDisplay').textContent = CONFIG.dataUrl;
+            document.getElementById('configInfo').style.display = 'block';
+        }
+        
+        // ====================================================================
+        // 📡 DATA LOADING FUNCTIONS
+        // ====================================================================
+        
+        async function autoLoadData() {
+            console.log('🔄 Attempting to auto-load data...');
+            showLoading(true, 'Loading timber sale data from GitHub...');
+            
+            try {
+                console.log('📡 Fetching from:', CONFIG.dataUrl);
+                
+                const response = await fetch(CONFIG.dataUrl, {
+                    cache: 'no-cache',
+                    headers: {
+                        'Cache-Control': 'no-cache',
+                        'Pragma': 'no-cache'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const geojsonData = await response.json();
+                
+                // Validate the GeoJSON data
+                if (!geojsonData || !geojsonData.features) {
+                    throw new Error('Invalid GeoJSON format - missing features array');
+                }
+                
+                // Get last modified time
+                const lastModified = response.headers.get('Last-Modified');
+                if (lastModified) {
+                    lastUpdateTime = new Date(lastModified);
+                } else {
+                    lastUpdateTime = new Date();
+                }
+                
+                // Load the data
+                loadGeoJSONData(geojsonData);
+                showLastUpdated();
+                
+                console.log('✅ Auto-load successful -', geojsonData.features.length, 'features loaded');
+                showNotification(`Successfully loaded ${geojsonData.features.length} timber sale areas from GitHub!`, 'success');
+                
+            } catch (error) {
+                console.error('❌ Auto-load failed:', error);
+                handleAutoLoadFailure(error);
+            }
+            
+            showLoading(false);
+        }
+        
+        function handleAutoLoadFailure(error) {
+            let message = 'Failed to auto-load data from GitHub. ';
+            
+            if (error.message.includes('404')) {
+                message += 'The data file was not found. You can submit new data using the form below.';
+            } else if (error.message.includes('403')) {
+                message += 'Access denied. Check that your repository is public or your token has correct permissions.';
+            } else if (CONFIG.githubUsername === 'YOUR-USERNAME') {
+                message += 'Please update the CONFIG section with your actual GitHub repository information.';
+            } else {
+                message += error.message;
+            }
+            
+            showUploadPanel();
+            showNotification(message, 'warning');
+        }
+        
+        function retryAutoLoad() {
+            autoLoadData();
+        }
+        
+        // ====================================================================
+        // 🔄 UPDATE CHECKING FUNCTIONS
+        // ====================================================================
+        
+        function startUpdateChecking() {
+            if (updateCheckInterval) {
+                clearInterval(updateCheckInterval);
+            }
+            
+            updateCheckInterval = setInterval(checkForUpdates, CONFIG.checkInterval);
+            console.log('🔄 Started automatic update checking every', CONFIG.checkInterval / 1000, 'seconds');
+        }
+        
+        function stopUpdateChecking() {
+            if (updateCheckInterval) {
+                clearInterval(updateCheckInterval);
+                updateCheckInterval = null;
+                console.log('⏹️ Stopped automatic update checking');
+            }
+        }
+        
+        async function checkForUpdates() {
+            if (!lastUpdateTime) return;
+            
+            try {
+                const response = await fetch(CONFIG.dataUrl, { 
+                    method: 'HEAD', 
+                    cache: 'no-cache',
+                    headers: {
+                        'Cache-Control': 'no-cache'
+                    }
+                });
+                
+                if (response.ok) {
+                    const serverLastModified = response.headers.get('Last-Modified');
+                    
+                    if (serverLastModified) {
+                        const serverTime = new Date(serverLastModified);
+                        
+                        if (serverTime > lastUpdateTime) {
+                            console.log('🆕 New data detected on server');
+                            showUpdateNotification();
+                        }
+                    }
+                }
+            } catch (error) {
+                console.log('Update check failed:', error.message);
+            }
+        }
+        
+        // ====================================================================
+        // 📁 SAMPLE DATA AND UTILITY FUNCTIONS
+        // ====================================================================
+        
+        function loadSampleData() {
+            const sampleData = {
+                "type": "FeatureCollection",
+                "features": [
+                    {
+                        "type": "Feature",
+                        "properties": {
+                            "id": "TS001",
+                            "name": "North Ridge Sale",
+                            "acres": 45.7,
+                            "species": "Oak, Maple",
+                            "status": "active",
+                            "sale_date": "2024-03-15"
+                        },
+                        "geometry": {
+                            "type": "Polygon",
+                            "coordinates": [[
+                                [-89.6, 44.6],
+                                [-89.55, 44.6],
+                                [-89.55, 44.55],
+                                [-89.6, 44.55],
+                                [-89.6, 44.6]
+                            ]]
+                        }
+                    },
+                    {
+                        "type": "Feature",
+                        "properties": {
+                            "id": "TS002",
+                            "name": "Creek Bottom Harvest",
+                            "acres": 23.2,
+                            "species": "Pine, Birch",
+                            "status": "planned",
+                            "sale_date": "2024-06-01"
+                        },
+                        "geometry": {
+                            "type": "Polygon",
+                            "coordinates": [[
+                                [-89.5, 44.5],
+                                [-89.45, 44.5],
+                                [-89.45, 44.45],
+                                [-89.5, 44.45],
+                                [-89.5, 44.5]
+                            ]]
+                        }
+                    },
+                    {
+                        "type": "Feature",
+                        "properties": {
+                            "id": "TS003",
+                            "name": "South Slope Timber",
+                            "acres": 67.8,
+                            "species": "Hickory, Walnut",
+                            "status": "completed",
+                            "sale_date": "2023-11-20"
+                        },
+                        "geometry": {
+                            "type": "Polygon",
+                            "coordinates": [[
+                                [-89.4, 44.4],
+                                [-89.35, 44.4],
+                                [-89.35, 44.35],
+                                [-89.4, 44.35],
+                                [-89.4, 44.4]
+                            ]]
+                        }
+                    }
+                ]
+            };
+            
+            loadGeoJSONData(sampleData);
+            lastUpdateTime = new Date();
+            showLastUpdated();
+            showNotification('Sample timber sale data loaded successfully!', 'success');
+        }
+        
+        function clearData() {
+            if (saleAreasLayer) {
+                map.removeLayer(saleAreasLayer);
+                saleAreasLayer = null;
+            }
+            
+            dataTable.clear().draw();
+            currentData = [];
+            updateStatistics([]);
+            
+            document.getElementById('lastUpdated').style.display = 'none';
+            showNotification('All data cleared.', 'info');
+        }
+        
+        // ====================================================================
+        // 🗺️ MAP AND DATA FUNCTIONS
+        // ====================================================================
+        
         function loadGeoJSONData(geojsonData) {
+            console.log('📊 Loading GeoJSON data...', geojsonData.features?.length || 0, 'features');
+            
             // Clear existing data
             if (saleAreasLayer) {
                 map.removeLayer(saleAreasLayer);
             }
             dataTable.clear();
+            
+            // Validate GeoJSON structure
+            if (!geojsonData.features || !Array.isArray(geojsonData.features)) {
+                throw new Error('Invalid GeoJSON: features array is missing');
+            }
             
             // Add GeoJSON to map
             saleAreasLayer = L.geoJSON(geojsonData, {
@@ -351,33 +602,89 @@
                     };
                 },
                 onEachFeature: function(feature, layer) {
-                    // Create popup content
-                    let popupContent = '<div class="popup-title">Sale Area Details</div>';
-                    const props = feature.properties;
-                    
-                    // Display all properties
-                    Object.keys(props).forEach(key => {
-                        if (props[key] !== null && props[key] !== '') {
-                            popupContent += `<div class="popup-field"><span class="popup-label">${formatLabel(key)}:</span> ${props[key]}</div>`;
-                        }
-                    });
-                    
+                    const popupContent = createPopupContent(feature.properties);
                     layer.bindPopup(popupContent);
                     
-                    // Add click event to zoom to feature
                     layer.on('click', function() {
                         map.fitBounds(layer.getBounds());
                     });
                 }
             }).addTo(map);
             
-            // Fit map to data bounds
-            map.fitBounds(saleAreasLayer.getBounds());
+            // Fit map to data bounds if features exist
+            if (geojsonData.features.length > 0) {
+                try {
+                    map.fitBounds(saleAreasLayer.getBounds());
+                } catch (error) {
+                    console.warn('Could not fit bounds to data:', error);
+                }
+            }
             
-            // Populate data table
+            // Update data table and statistics
             currentData = geojsonData.features;
             populateDataTable(currentData);
             updateStatistics(currentData);
+            
+            // Hide upload panel if data loaded successfully
+            document.getElementById('uploadPanel').style.display = 'none';
+        }
+        
+        function createPopupContent(properties) {
+            let popupContent = '<div class="popup-title">🌲 Sale Area Details</div>';
+            
+            // Define the order and labels for common fields
+            const fieldOrder = [
+                { key: 'name', label: 'Name' },
+                { key: 'sale_name', label: 'Sale Name' },
+                { key: 'id', label: 'ID' },
+                { key: 'fid', label: 'Feature ID' },
+                { key: 'acres', label: 'Acres' },
+                { key: 'area', label: 'Area' },
+                { key: 'species', label: 'Species' },
+                { key: 'dominant_species', label: 'Dominant Species' },
+                { key: 'status', label: 'Status' },
+                { key: 'sale_date', label: 'Sale Date' },
+                { key: 'harvest_date', label: 'Harvest Date' }
+            ];
+            
+            // Add ordered fields first
+            fieldOrder.forEach(field => {
+                if (properties[field.key] !== null && properties[field.key] !== undefined && properties[field.key] !== '') {
+                    let value = properties[field.key];
+                    if (field.key === 'acres' || field.key === 'area') {
+                        value = parseFloat(value).toLocaleString() + ' ac';
+                    }
+                    popupContent += `<div class="popup-field"><span class="popup-label">${field.label}:</span> ${value}</div>`;
+                }
+            });
+            
+            // Add any remaining fields
+            Object.keys(properties).forEach(key => {
+                const isOrderedField = fieldOrder.some(field => field.key === key);
+                if (!isOrderedField && properties[key] !== null && properties[key] !== undefined && properties[key] !== '') {
+                    const label = formatFieldName(key);
+                    popupContent += `<div class="popup-field"><span class="popup-label">${label}:</span> ${properties[key]}</div>`;
+                }
+            });
+            
+            return popupContent;
+        }
+        
+        function formatFieldName(fieldName) {
+            return fieldName
+                .replace(/_/g, ' ')
+                .replace(/\b\w/g, l => l.toUpperCase());
+        }
+        
+        function getStatusColor(status) {
+            const colors = {
+                'active': '#28a745',
+                'planned': '#ffc107',
+                'completed': '#6c757d',
+                'pending': '#17a2b8',
+                'cancelled': '#dc3545'
+            };
+            return colors[status.toLowerCase()] || '#28a745';
         }
         
         function populateDataTable(features) {
@@ -385,17 +692,26 @@
             
             features.forEach((feature, index) => {
                 const props = feature.properties;
-                const row = [
-                    props.id || props.fid || index + 1,
+                const acres = props.acres || props.area || 0;
+                const species = props.species || props.dominant_species || 'N/A';
+                const status = props.status || 'active';
+                const saleDate = props.sale_date || props.harvest_date || 'N/A';
+                
+                const actionButtons = `
+                    <button class="btn btn-sm btn-outline-primary" onclick="zoomToFeature(${index})" title="Zoom to area">
+                        🔍
+                    </button>
+                `;
+                
+                dataTable.row.add([
+                    props.id || props.fid || `F${index + 1}`,
                     props.name || props.sale_name || 'Unnamed',
-                    props.acres || props.area || calculateArea(feature),
-                    props.species || props.dominant_species || 'Mixed',
-                    props.status || 'Active',
-                    props.sale_date || props.harvest_date || 'TBD',
-                    `<button class="btn btn-sm btn-forest" onclick="zoomToFeature(${index})">View</button>
-                     <button class="btn btn-sm btn-outline-secondary ml-1" onclick="showDetails(${index})">Details</button>`
-                ];
-                dataTable.row.add(row);
+                    acres,
+                    species,
+                    `<span class="badge" style="background-color: ${getStatusColor(status)}; color: white;">${status}</span>`,
+                    saleDate,
+                    actionButtons
+                ]);
             });
             
             dataTable.draw();
@@ -403,20 +719,14 @@
         
         function updateStatistics(features) {
             const totalAreas = features.length;
-            let totalAcres = 0;
-            let activeAreas = 0;
-            
-            features.forEach(feature => {
+            const totalAcres = features.reduce((sum, feature) => {
                 const acres = parseFloat(feature.properties.acres || feature.properties.area || 0);
-                totalAcres += acres;
-                
-                const status = feature.properties.status || 'active';
-                if (status.toLowerCase() === 'active') {
-                    activeAreas++;
-                }
-            });
-            
-            const avgSize = totalAreas > 0 ? (totalAcres / totalAreas) : 0;
+                return sum + acres;
+            }, 0);
+            const avgSize = totalAreas > 0 ? totalAcres / totalAreas : 0;
+            const activeAreas = features.filter(feature => 
+                (feature.properties.status || 'active').toLowerCase() === 'active'
+            ).length;
             
             document.getElementById('totalAreas').textContent = totalAreas.toLocaleString();
             document.getElementById('totalAcres').textContent = Math.round(totalAcres).toLocaleString();
@@ -424,155 +734,75 @@
             document.getElementById('activeAreas').textContent = activeAreas.toLocaleString();
         }
         
-        function getStatusColor(status) {
-            const colors = {
-                'active': '#4a7c24',
-                'planned': '#ffc107',
-                'harvested': '#6c757d',
-                'sold': '#28a745',
-                'pending': '#fd7e14'
-            };
-            return colors[status.toLowerCase()] || '#4a7c24';
-        }
-        
-        function formatLabel(key) {
-            return key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-        }
-        
-        function calculateArea(feature) {
-            // Simple area calculation for display purposes
-            if (feature.geometry.type === 'Polygon') {
-                return 'Calculated';
-            }
-            return 'N/A';
-        }
-        
         function zoomToFeature(index) {
-            if (saleAreasLayer && currentData[index]) {
+            if (currentData[index] && saleAreasLayer) {
                 const feature = currentData[index];
-                saleAreasLayer.eachLayer(function(layer) {
-                    if (layer.feature === feature) {
-                        map.fitBounds(layer.getBounds());
-                        layer.openPopup();
-                    }
-                });
+                const layer = saleAreasLayer.getLayers().find(l => l.feature === feature);
+                if (layer) {
+                    map.fitBounds(layer.getBounds());
+                    layer.openPopup();
+                }
             }
         }
         
-        function showDetails(index) {
-            const feature = currentData[index];
-            if (feature) {
-                let details = 'Detailed Information:\n\n';
-                Object.keys(feature.properties).forEach(key => {
-                    details += `${formatLabel(key)}: ${feature.properties[key]}\n`;
-                });
-                alert(details);
-            }
-        }
+        // ====================================================================
+        // 🔔 NOTIFICATION FUNCTIONS
+        // ====================================================================
         
-        function loadSampleData() {
-            // Create sample timber sale data
-            const sampleData = {
-                "type": "FeatureCollection",
-                "features": [
-                    {
-                        "type": "Feature",
-                        "properties": {
-                            "id": "TS001",
-                            "name": "North Ridge Stand",
-                            "acres": 45.2,
-                            "species": "Oak-Hickory",
-                            "status": "Active",
-                            "sale_date": "2024-03-15",
-                            "volume": "1,200 MBF",
-                            "price_per_mbf": "$850"
-                        },
-                        "geometry": {
-                            "type": "Polygon",
-                            "coordinates": [[
-                                [-90.5, 44.5],
-                                [-90.4, 44.5],
-                                [-90.4, 44.6],
-                                [-90.5, 44.6],
-                                [-90.5, 44.5]
-                            ]]
-                        }
-                    },
-                    {
-                        "type": "Feature",
-                        "properties": {
-                            "id": "TS002",
-                            "name": "South Valley Stand",
-                            "acres": 32.8,
-                            "species": "Pine-Aspen",
-                            "status": "Planned",
-                            "sale_date": "2024-06-01",
-                            "volume": "950 MBF",
-                            "price_per_mbf": "$780"
-                        },
-                        "geometry": {
-                            "type": "Polygon",
-                            "coordinates": [[
-                                [-90.3, 44.4],
-                                [-90.2, 44.4],
-                                [-90.2, 44.5],
-                                [-90.3, 44.5],
-                                [-90.3, 44.4]
-                            ]]
-                        }
-                    },
-                    {
-                        "type": "Feature",
-                        "properties": {
-                            "id": "TS003",
-                            "name": "East Creek Stand",
-                            "acres": 67.5,
-                            "species": "Mixed Hardwood",
-                            "status": "Sold",
-                            "sale_date": "2024-01-20",
-                            "volume": "2,100 MBF",
-                            "price_per_mbf": "$920"
-                        },
-                        "geometry": {
-                            "type": "Polygon",
-                            "coordinates": [[
-                                [-90.1, 44.6],
-                                [-89.9, 44.6],
-                                [-89.9, 44.7],
-                                [-90.1, 44.7],
-                                [-90.1, 44.6]
-                            ]]
-                        }
-                    }
-                ]
-            };
+        function showNotification(message, type = 'info', duration = 5000) {
+            const alertClass = `alert-${type}`;
+            const notification = $(`
+                <div class="alert ${alertClass} alert-dismissible fade show update-notification" role="alert">
+                    ${message}
+                    <button type="button" class="close" data-dismiss="alert">
+                        <span>&times;</span>
+                    </button>
+                </div>
+            `);
             
-            loadGeoJSONData(sampleData);
-        }
-        
-        function clearData() {
-            if (saleAreasLayer) {
-                map.removeLayer(saleAreasLayer);
-                saleAreasLayer = null;
-            }
-            dataTable.clear().draw();
-            currentData = [];
+            $('body').append(notification);
             
-            // Reset statistics
-            document.getElementById('totalAreas').textContent = '0';
-            document.getElementById('totalAcres').textContent = '0';
-            document.getElementById('avgSize').textContent = '0';
-            document.getElementById('activeAreas').textContent = '0';
+            if (duration > 0) {
+                setTimeout(() => {
+                    notification.alert('close');
+                }, duration);
+            }
         }
         
-        // Row click event for table
-        $('#saleAreasTable tbody').on('click', 'tr', function() {
-            const data = dataTable.row(this).data();
-            if (data) {
-                const index = dataTable.row(this).index();
-                zoomToFeature(index);
+        function showUpdateNotification() {
+            const notification = $(`
+                <div class="alert alert-info alert-dismissible fade show update-notification" role="alert">
+                    🆕 New timber data available! 
+                    <button class="btn btn-sm btn-outline-info ml-2" onclick="autoLoadData()">Refresh Now</button>
+                    <button type="button" class="close" data-dismiss="alert">
+                        <span>&times;</span>
+                    </button>
+                </div>
+            `);
+            
+            $('body').append(notification);
+        }
+        
+        function showLoading(show, message = 'Loading...') {
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            if (show) {
+                loadingIndicator.querySelector('.mt-2').textContent = message;
+                loadingIndicator.style.display = 'block';
+            } else {
+                loadingIndicator.style.display = 'none';
             }
-        });
+        }
+        
+        function showLastUpdated() {
+            if (lastUpdateTime) {
+                document.getElementById('updateTime').textContent = lastUpdateTime.toLocaleString();
+                document.getElementById('lastUpdated').style.display = 'flex';
+            }
+        }
+        
+        function showUploadPanel() {
+            document.getElementById('uploadPanel').style.display = 'block';
+        }
     </script>
 </body>
 </html>
