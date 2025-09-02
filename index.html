@@ -420,27 +420,54 @@
                     const [lon, lat] = proj4(fromEPSG, toEPSG, [x, y]);
                     return [lon, lat];
                 } catch (error) {
-                    console.error('Coordinate transformation failed:', error);
-                    return coord;
+                    console.error('Coordinate transformation failed for point:', coord, error);
+                    return coord; // Return original if transformation fails
                 }
             }
             
-            function transformGeometry(geom) {
-                if (geom.type === 'Point') {
-                    return transformCoordPair(geom.coordinates);
-                } else if (geom.type === 'LineString' || geom.type === 'MultiPoint') {
-                    return geom.coordinates.map(transformCoordPair);
-                } else if (geom.type === 'Polygon' || geom.type === 'MultiLineString') {
-                    return geom.coordinates.map(ring => ring.map(transformCoordPair));
-                } else if (geom.type === 'MultiPolygon') {
-                    return geom.coordinates.map(polygon => 
-                        polygon.map(ring => ring.map(transformCoordPair))
-                    );
-                }
-                return coordinates;
+            function transformRing(ring) {
+                return ring.map(transformCoordPair);
             }
             
-            return transformGeometry({ type: 'MultiPolygon', coordinates: coordinates });
+            function transformPolygon(polygon) {
+                return polygon.map(transformRing);
+            }
+            
+            function transformMultiPolygon(multipolygon) {
+                return multipolygon.map(transformPolygon);
+            }
+            
+            // Handle different geometry types
+            if (Array.isArray(coordinates)) {
+                // Check the depth of the array to determine geometry type
+                if (coordinates.length > 0) {
+                    const firstElement = coordinates[0];
+                    
+                    // MultiPolygon: [[[[x,y]]]]
+                    if (Array.isArray(firstElement) && Array.isArray(firstElement[0]) && Array.isArray(firstElement[0][0])) {
+                        console.log('🔄 Transforming MultiPolygon coordinates');
+                        return transformMultiPolygon(coordinates);
+                    }
+                    // Polygon: [[[x,y]]]
+                    else if (Array.isArray(firstElement) && Array.isArray(firstElement[0])) {
+                        console.log('🔄 Transforming Polygon coordinates');
+                        return transformPolygon(coordinates);
+                    }
+                    // LineString: [[x,y]]
+                    else if (Array.isArray(firstElement)) {
+                        console.log('🔄 Transforming LineString coordinates');
+                        return transformRing(coordinates);
+                    }
+                    // Point: [x,y]
+                    else if (typeof firstElement === 'number') {
+                        console.log('🔄 Transforming Point coordinates');
+                        return transformCoordPair(coordinates);
+                    }
+                }
+            }
+            
+            console.warn('⚠️ Unknown coordinate structure, returning original:', coordinates);
+            return coordinates;
         }
         
         // Add base map tiles
