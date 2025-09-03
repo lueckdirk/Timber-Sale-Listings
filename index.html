@@ -103,6 +103,15 @@
             margin-top: 1rem;
             font-size: 0.9rem;
         }
+
+        .transform-info {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
         
         /* Rest of existing styles */
         .main-container { max-width: 1400px; margin: 0 auto; padding: 0 1rem; }
@@ -178,6 +187,14 @@
             </div>
             <div class="mt-2 text-muted">
                 <small>💡 To update this configuration, modify the CONFIG object in the HTML file and republish to GitHub Pages.</small>
+            </div>
+        </div>
+
+        <!-- Transform Info Panel -->
+        <div id="transformInfo" class="transform-info" style="display: none;">
+            <strong>🔄 Coordinate Transformation Status:</strong><br>
+            <div id="transformContent" class="mt-2">
+                <em>Transformation information will appear here...</em>
             </div>
         </div>
 
@@ -417,7 +434,22 @@
             function transformCoordPair(coord) {
                 try {
                     const [x, y] = coord;
+                    
+                    // Validate input coordinates
+                    if (typeof x !== 'number' || typeof y !== 'number' || isNaN(x) || isNaN(y)) {
+                        console.warn('Invalid coordinate pair:', coord);
+                        return coord;
+                    }
+                    
+                    // Transform
                     const [lon, lat] = proj4(fromEPSG, toEPSG, [x, y]);
+                    
+                    // Validate output coordinates (reasonable lat/lon for Wisconsin)
+                    if (isNaN(lat) || isNaN(lon) || lat < 42 || lat > 47 || lon < -93 || lon > -86) {
+                        console.warn('Transformed coordinates appear invalid:', [lon, lat], 'from original:', coord);
+                        // Still return the transformed coordinates as they might be correct
+                    }
+                    
                     return [lon, lat];
                 } catch (error) {
                     console.error('Coordinate transformation failed for point:', coord, error);
@@ -426,15 +458,24 @@
             }
             
             function transformRing(ring) {
-                return ring.map(transformCoordPair);
+                if (!Array.isArray(ring)) return ring;
+                const transformed = ring.map(transformCoordPair);
+                console.log(`Transformed ring with ${ring.length} points`);
+                return transformed;
             }
             
             function transformPolygon(polygon) {
-                return polygon.map(transformRing);
+                if (!Array.isArray(polygon)) return polygon;
+                const transformed = polygon.map(transformRing);
+                console.log(`Transformed polygon with ${polygon.length} rings`);
+                return transformed;
             }
             
             function transformMultiPolygon(multipolygon) {
-                return multipolygon.map(transformPolygon);
+                if (!Array.isArray(multipolygon)) return multipolygon;
+                const transformed = multipolygon.map(transformPolygon);
+                console.log(`Transformed multipolygon with ${multipolygon.length} polygons`);
+                return transformed;
             }
             
             // Handle different geometry types
@@ -454,12 +495,12 @@
                         return transformPolygon(coordinates);
                     }
                     // LineString: [[x,y]]
-                    else if (Array.isArray(firstElement)) {
+                    else if (Array.isArray(firstElement) && firstElement.length === 2 && typeof firstElement[0] === 'number') {
                         console.log('🔄 Transforming LineString coordinates');
                         return transformRing(coordinates);
                     }
                     // Point: [x,y]
-                    else if (typeof firstElement === 'number') {
+                    else if (typeof firstElement === 'number' && coordinates.length === 2) {
                         console.log('🔄 Transforming Point coordinates');
                         return transformCoordPair(coordinates);
                     }
@@ -535,6 +576,13 @@
             debugPanel.style.display = debugMode ? 'block' : 'none';
         }
         
+        function showTransformInfo(message) {
+            const transformPanel = document.getElementById('transformInfo');
+            const transformContent = document.getElementById('transformContent');
+            transformContent.innerHTML = message;
+            transformPanel.style.display = 'block';
+        }
+        
         async function testConnection() {
             const debugContent = document.getElementById('debugContent');
             debugContent.innerHTML = '<em>Testing connection...</em>';
@@ -576,6 +624,25 @@
                         debugInfo += `Type: ${json.type || 'Unknown'}<br>`;
                         debugInfo += `Features: ${json.features?.length || 'No features array'}<br>`;
                         debugInfo += `CRS: ${json.crs?.properties?.name || 'Not specified'}<br>`;
+                        
+                        // Test coordinate transformation
+                        if (json.features && json.features.length > 0) {
+                            const firstFeature = json.features[0];
+                            if (firstFeature.geometry && firstFeature.geometry.coordinates) {
+                                debugInfo += '<br>3️⃣ <strong>Coordinate Transformation Test:</strong><br>';
+                                const originalCoords = firstFeature.geometry.coordinates;
+                                debugInfo += `Original coordinates sample: ${JSON.stringify(originalCoords[0]?.slice(0,2))}<br>`;
+                                
+                                try {
+                                    const transformed = transformCoordinates(originalCoords);
+                                    debugInfo += `Transformed coordinates sample: ${JSON.stringify(transformed[0]?.slice(0,2))}<br>`;
+                                    debugInfo += `✅ Coordinate transformation appears to be working<br>`;
+                                } catch (transformError) {
+                                    debugInfo += `❌ Coordinate transformation failed: ${transformError.message}<br>`;
+                                }
+                            }
+                        }
+                        
                     } catch (parseError) {
                         debugInfo += `❌ JSON Parse Error: ${parseError.message}<br>`;
                     }
@@ -586,23 +653,6 @@
             } catch (error) {
                 debugInfo += `❌ Connection Error: ${error.message}<br>`;
                 debugInfo += `Error Type: ${error.constructor.name}<br>`;
-            }
-            
-            // Test 3: Alternative URLs
-            debugInfo += '<br>3️⃣ <strong>Alternative URL Tests:</strong><br>';
-            const altUrls = [
-                `https://raw.githubusercontent.com/${CONFIG.githubUsername}/${CONFIG.repositoryName}/master/${CONFIG.dataFilePath}`,
-                `https://github.com/${CONFIG.githubUsername}/${CONFIG.repositoryName}/blob/main/${CONFIG.dataFilePath}`,
-                `https://${CONFIG.githubUsername}.github.io/${CONFIG.repositoryName}/${CONFIG.dataFilePath}`
-            ];
-            
-            for (const url of altUrls) {
-                try {
-                    const testResponse = await fetch(url, { method: 'HEAD', cache: 'no-cache' });
-                    debugInfo += `${testResponse.ok ? '✅' : '❌'} ${url} - Status: ${testResponse.status}<br>`;
-                } catch (e) {
-                    debugInfo += `❌ ${url} - Error: ${e.message}<br>`;
-                }
             }
             
             debugContent.innerHTML = debugInfo;
@@ -642,11 +692,28 @@
                     throw new Error('Invalid GeoJSON format - missing features array');
                 }
                 
-                // Check for coordinate system issues
-                if (geojsonData.crs && geojsonData.crs.properties && geojsonData.crs.properties.name !== "urn:ogc:def:crs:OGC:1.3:CRS84") {
-                    console.warn('⚠️ Non-standard coordinate system detected:', geojsonData.crs.properties.name);
-                    showNotification('Data uses EPSG:3070 coordinate system. Transforming to WGS84 for web display...', 'info', 5000);
+                console.log('🔍 Raw GeoJSON data:', geojsonData);
+                
+                // Check for coordinate system issues and handle transformation
+                let needsTransformation = false;
+                let transformMessage = '';
+                
+                if (geojsonData.crs && geojsonData.crs.properties) {
+                    const crsName = geojsonData.crs.properties.name;
+                    console.log('🌐 Detected CRS:', crsName);
+                    
+                    if (crsName.includes('EPSG::3070') || crsName.includes('3070')) {
+                        needsTransformation = true;
+                        transformMessage = `🔄 <strong>Coordinate System Detected:</strong> ${crsName}<br>`;
+                        transformMessage += 'This data uses Wisconsin State Plane coordinates and will be transformed to WGS84 for web display.<br>';
+                        console.log('🔄 Data uses EPSG:3070, transformation needed');
+                    }
+                } else {
+                    console.log('⚠️ No CRS specified in data');
+                    transformMessage = '⚠️ <strong>No coordinate system specified</strong> - assuming data is already in WGS84 (lat/lon)';
                 }
+                
+                showTransformInfo(transformMessage);
                 
                 // Get last modified time
                 const lastModified = response.headers.get('Last-Modified');
@@ -656,8 +723,8 @@
                     lastUpdateTime = new Date();
                 }
                 
-                // Load the data
-                loadGeoJSONData(geojsonData);
+                // Load the data (transformation happens inside loadGeoJSONData)
+                loadGeoJSONData(geojsonData, needsTransformation);
                 showLastUpdated();
                 
                 console.log('✅ Auto-load successful -', geojsonData.features.length, 'features loaded');
@@ -831,7 +898,7 @@
                 ]
             };
             
-            loadGeoJSONData(sampleData);
+            loadGeoJSONData(sampleData, false);
             lastUpdateTime = new Date();
             showLastUpdated();
             showNotification('Sample timber sale data loaded successfully!', 'success');
@@ -848,6 +915,7 @@
             updateStatistics([]);
             
             document.getElementById('lastUpdated').style.display = 'none';
+            document.getElementById('transformInfo').style.display = 'none';
             showNotification('All data cleared.', 'info');
         }
         
@@ -855,7 +923,7 @@
         // 🗺️ MAP AND DATA FUNCTIONS
         // ====================================================================
         
-        function loadGeoJSONData(geojsonData) {
+        function loadGeoJSONData(geojsonData, needsTransformation = false) {
             console.log('📊 Loading GeoJSON data...', geojsonData.features?.length || 0, 'features');
             
             // Clear existing data
@@ -869,63 +937,90 @@
                 throw new Error('Invalid GeoJSON: features array is missing');
             }
             
-            // Check if coordinate transformation is needed
-            let needsTransformation = false;
-            if (geojsonData.crs && geojsonData.crs.properties) {
-                const crsName = geojsonData.crs.properties.name;
-                if (crsName.includes('EPSG::3070') || crsName.includes('3070')) {
-                    needsTransformation = true;
-                    console.log('🔄 Transforming coordinates from EPSG:3070 to WGS84...');
-                }
-            }
+            // Create a working copy of the data
+            const workingData = JSON.parse(JSON.stringify(geojsonData));
             
             // Transform coordinates if needed
             if (needsTransformation && typeof proj4 !== 'undefined') {
-                geojsonData.features.forEach(feature => {
+                console.log('🔄 Starting coordinate transformation...');
+                let transformedCount = 0;
+                let failedCount = 0;
+                
+                workingData.features.forEach((feature, index) => {
                     if (feature.geometry && feature.geometry.coordinates) {
                         try {
-                            feature.geometry.coordinates = transformCoordinates(feature.geometry.coordinates);
-                            console.log('✅ Transformed coordinates for feature', feature.properties.fid || feature.properties.id);
+                            const originalCoords = feature.geometry.coordinates;
+                            const transformedCoords = transformCoordinates(originalCoords);
+                            feature.geometry.coordinates = transformedCoords;
+                            transformedCount++;
+                            
+                            console.log(`✅ Transformed feature ${index + 1}:`, 
+                                       feature.properties.fid || feature.properties.id || `Feature ${index}`);
                         } catch (error) {
-                            console.error('❌ Failed to transform coordinates for feature:', error);
+                            console.error(`❌ Failed to transform feature ${index + 1}:`, error);
+                            failedCount++;
                         }
                     }
                 });
                 
                 // Remove CRS info as we've transformed to WGS84
-                delete geojsonData.crs;
-                console.log('✅ Coordinate transformation complete');
+                delete workingData.crs;
+                
+                const transformInfo = document.getElementById('transformContent');
+                transformInfo.innerHTML += `<br><strong>Transformation Results:</strong><br>`;
+                transformInfo.innerHTML += `✅ Successfully transformed: ${transformedCount} features<br>`;
+                if (failedCount > 0) {
+                    transformInfo.innerHTML += `❌ Failed to transform: ${failedCount} features<br>`;
+                }
+                
+                console.log(`✅ Coordinate transformation complete: ${transformedCount} success, ${failedCount} failed`);
             } else if (needsTransformation) {
                 console.warn('⚠️ Data needs coordinate transformation but Proj4js is not available');
+                showNotification('Warning: Data uses EPSG:3070 but coordinate transformation library not available', 'warning');
             }
             
+            console.log('🗺️ Adding features to map...');
+            
             // Add GeoJSON to map
-            saleAreasLayer = L.geoJSON(geojsonData, {
-                style: function(feature) {
-                    return {
-                        fillColor: getStatusColor(feature.properties.status || 'active'),
-                        weight: 2,
-                        opacity: 1,
-                        color: '#2d5016',
-                        dashArray: '3',
-                        fillOpacity: 0.6
-                    };
-                },
-                onEachFeature: function(feature, layer) {
-                    const popupContent = createPopupContent(feature.properties);
-                    layer.bindPopup(popupContent);
-                    
-                    layer.on('click', function() {
-                        map.fitBounds(layer.getBounds());
-                    });
-                }
-            }).addTo(map);
+            try {
+                saleAreasLayer = L.geoJSON(workingData, {
+                    style: function(feature) {
+                        return {
+                            fillColor: getStatusColor(feature.properties.status || 'active'),
+                            weight: 2,
+                            opacity: 1,
+                            color: '#2d5016',
+                            dashArray: '3',
+                            fillOpacity: 0.6
+                        };
+                    },
+                    onEachFeature: function(feature, layer) {
+                        const popupContent = createPopupContent(feature.properties);
+                        layer.bindPopup(popupContent);
+                        
+                        layer.on('click', function() {
+                            map.fitBounds(layer.getBounds());
+                        });
+                    }
+                }).addTo(map);
+                
+                console.log('✅ Features added to map successfully');
+            } catch (mapError) {
+                console.error('❌ Error adding features to map:', mapError);
+                throw new Error(`Failed to add features to map: ${mapError.message}`);
+            }
             
             // Fit map to data bounds if features exist
-            if (geojsonData.features.length > 0) {
+            if (workingData.features.length > 0) {
                 try {
-                    map.fitBounds(saleAreasLayer.getBounds());
-                    console.log('✅ Map fitted to data bounds');
+                    const bounds = saleAreasLayer.getBounds();
+                    if (bounds.isValid()) {
+                        map.fitBounds(bounds);
+                        console.log('✅ Map fitted to data bounds');
+                    } else {
+                        console.warn('⚠️ Invalid bounds, using default Wisconsin view');
+                        map.setView([44.5, -89.5], 8);
+                    }
                 } catch (error) {
                     console.warn('Could not fit bounds to data:', error);
                     // Fallback to Wisconsin center
@@ -934,7 +1029,7 @@
             }
             
             // Update data table and statistics
-            currentData = geojsonData.features;
+            currentData = workingData.features;
             populateDataTable(currentData);
             updateStatistics(currentData);
             
@@ -943,7 +1038,7 @@
         }
         
         function createPopupContent(properties) {
-            let popupContent = '<div class="popup-title">🌲 Sale Area Details</div>';
+            let popupContent = '<div class="popup-title">Timber Sale Area Details</div>';
             
             // Define the order and labels for common fields
             const fieldOrder = [
@@ -1021,7 +1116,7 @@
                 
                 const actionButtons = `
                     <button class="btn btn-sm btn-outline-primary" onclick="zoomToFeature(${index})" title="Zoom to area">
-                        🔍
+                        Zoom
                     </button>
                 `;
                 
@@ -1094,7 +1189,7 @@
         function showUpdateNotification() {
             const notification = $(`
                 <div class="alert alert-info alert-dismissible fade show update-notification" role="alert">
-                    🆕 New timber data available! 
+                    New timber data available! 
                     <button class="btn btn-sm btn-outline-info ml-2" onclick="autoLoadData()">Refresh Now</button>
                     <button type="button" class="close" data-dismiss="alert">
                         <span>&times;</span>
