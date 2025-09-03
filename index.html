@@ -426,6 +426,33 @@
         function retryAutoLoad() {
             autoLoadData();
         }
+
+        function debugDataLoad() {
+            console.log('🔍 DEBUG: Starting manual debug...');
+            console.log('📡 CONFIG:', CONFIG);
+            console.log('📡 Data URL:', CONFIG.dataUrl);
+            console.log('🗺️ Map object:', map);
+            console.log('📋 DataTable object:', dataTable);
+            
+            // Test the URL directly
+            fetch(CONFIG.dataUrl)
+                .then(response => {
+                    console.log('📡 Direct fetch response:', response);
+                    return response.text();
+                })
+                .then(text => {
+                    console.log('📡 Raw response text:', text.substring(0, 500) + '...');
+                    try {
+                        const json = JSON.parse(text);
+                        console.log('📊 Parsed JSON:', json);
+                    } catch (e) {
+                        console.error('❌ JSON parse error:', e);
+                    }
+                })
+                .catch(error => {
+                    console.error('❌ Fetch error:', error);
+                });
+        }   
         
         // ====================================================================
         // 🔄 UPDATE CHECKING FUNCTIONS
