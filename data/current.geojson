@@ -28,7 +28,8 @@
         "Common Practice Name": "Uneven-aged Management",
         "species": "Oak, Maple, Hickory",
         "sale_date": "2024-03-15",
-        "estimated_value": 145000
+        "estimated_value": 145000,
+        "bid_link": "https://legacyforestmanagement.com/timber-for-sale/"
       },
       "geometry": {
         "type": "Polygon",
@@ -66,7 +67,8 @@
         "Common Practice Name": "Even-aged Management",
         "species": "Aspen, Birch, Basswood",
         "sale_date": "2024-06-01",
-        "estimated_value": 89500
+        "estimated_value": 89500,
+        "bid_link": "https://legacyforestmanagement.com/timber-for-sale/"
       },
       "geometry": {
         "type": "Polygon",
@@ -104,7 +106,8 @@
         "Common Practice Name": "High-grade Selection",
         "species": "Black Walnut, Cherry, Oak",
         "sale_date": "2023-11-20",
-        "estimated_value": 285000
+        "estimated_value": 285000,
+        "bid_link": "https://legacyforestmanagement.com/timber-for-sale/"
       },
       "geometry": {
         "type": "Polygon",
@@ -142,7 +145,8 @@
         "Common Practice Name": "Commercial Thinning",
         "species": "Red Pine, White Pine",
         "sale_date": "2024-04-10",
-        "estimated_value": 95000
+        "estimated_value": 95000,
+        "bid_link": "https://legacyforestmanagement.com/timber-for-sale/"
       },
       "geometry": {
         "type": "Polygon",
@@ -180,7 +184,8 @@
         "Common Practice Name": "Riparian Management",
         "species": "Tamarack, Cedar, Ash",
         "sale_date": "2024-08-15",
-        "estimated_value": 28500
+        "estimated_value": 28500,
+        "bid_link": "https://legacyforestmanagement.com/timber-for-sale/"
       },
       "geometry": {
         "type": "Polygon",
@@ -218,7 +223,8 @@
         "Common Practice Name": "Ecological Restoration",
         "species": "Oak, Hickory, scattered Pine",
         "sale_date": "2024-09-30",
-        "estimated_value": 42000
+        "estimated_value": 42000,
+        "bid_link": "https://legacyforestmanagement.com/timber-for-sale/"
       },
       "geometry": {
         "type": "Polygon",
