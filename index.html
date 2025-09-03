@@ -709,7 +709,8 @@
                 { key: 'dominant_species', label: 'Dominant Species' },
                 { key: 'status', label: 'Status' },
                 { key: 'sale_date', label: 'Sale Date' },
-                { key: 'harvest_date', label: 'Harvest Date' }
+                { key: 'harvest_date', label: 'Harvest Date' },
+                { key: 'bid_link', label: 'Bid Link' }
             ];
             
             // Add ordered fields first
@@ -718,6 +719,9 @@
                     let value = properties[field.key];
                     if (field.key === 'acres' || field.key === 'area') {
                         value = parseFloat(value).toLocaleString() + ' ac';
+                    } else {
+                        // Apply URL conversion to all text fields
+                        value = makeUrlsClickable(value);
                     }
                     popupContent += `<div class="popup-field"><span class="popup-label">${field.label}:</span> ${value}</div>`;
                 }
@@ -762,10 +766,22 @@
                 const status = props.status || 'active';
                 const saleDate = props.sale_date || props.harvest_date || 'N/A';
                 
+                // Check for URL in properties
+                let urlButton = '';
+                if (props.url || props.link || props.website) {
+                    const url = props.url || props.link || props.website;
+                    urlButton = `
+                        <a href="${url}" target="_blank" class="btn btn-sm btn-outline-info ml-1" title="View details">
+                            🔗
+                        </a>
+                    `;
+                }
+                
                 const actionButtons = `
                     <button class="btn btn-sm btn-outline-primary" onclick="zoomToFeature(${index})" title="Zoom to area">
                         🔍
                     </button>
+                    ${urlButton}
                 `;
                 
                 dataTable.row.add([
