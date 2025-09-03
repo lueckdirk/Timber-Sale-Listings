@@ -681,6 +681,18 @@
             // Hide upload panel if data loaded successfully
             document.getElementById('uploadPanel').style.display = 'none';
         }
+
+        function makeUrlsClickable(text) {
+            if (typeof text !== 'string') return text;
+            
+            // Regular expression to match URLs
+            const urlRegex = /(https?:\/\/[^\s]+)/g;
+            
+            // Replace URLs with clickable links
+            return text.replace(urlRegex, function(url) {
+                return `<a href="${url}" target="_blank" rel="noopener noreferrer" style="color: #4a7c24; text-decoration: underline;">${url}</a>`;
+            });
+        }
         
         function createPopupContent(properties) {
             let popupContent = '<div class="popup-title">🌲 Sale Area Details</div>';
