@@ -697,7 +697,8 @@
                 { key: 'dominant_species', label: 'Dominant Species' },
                 { key: 'status', label: 'Status' },
                 { key: 'sale_date', label: 'Sale Date' },
-                { key: 'harvest_date', label: 'Harvest Date' }
+                { key: 'harvest_date', label: 'Harvest Date' },
+                { key: 'bid_link', label: 'Bid Link' }
             ];
             
             // Add ordered fields first
@@ -706,6 +707,9 @@
                     let value = properties[field.key];
                     if (field.key === 'acres' || field.key === 'area') {
                         value = parseFloat(value).toLocaleString() + ' ac';
+                    } else if (field.key === 'bid_link') {
+                        // Make bid_link clickable
+                        value = `<a href="${value}" target="_blank" style="color: #4a7c24; text-decoration: underline;">View Bid Information</a>`;
                     }
                     popupContent += `<div class="popup-field"><span class="popup-label">${field.label}:</span> ${value}</div>`;
                 }
@@ -755,6 +759,14 @@
                         🔍
                     </button>
                 `;
+
+                if (props.bid_link) {
+                    actionButtons += `
+                        <a href="${props.bid_link}" target="_blank" class="btn btn-sm btn-outline-success ml-1" title="View bid information">
+                            💰
+                        </a>
+                    `;
+                }
                 
                 dataTable.row.add([
                     props.id || props.fid || `F${index + 1}`,
