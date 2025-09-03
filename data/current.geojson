@@ -1,8 +1,8 @@
 {
 "type": "FeatureCollection",
 "name": "timber_sales_temp",
-"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:EPSG::3070" } },
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
 "features": [
-{ "type": "Feature", "properties": { "fid": 16, "hrvst_type": "Marked Harvest", "notes": null, "Apprx_Cd-Ac": null, "Apprx_bf-ac": null, "Acres-feature": 25.533736260028739, "Acres-hrvst_type": null, "Calc_Cords": null, "Calc_BF": null, "Ttl_Est_Cds": null, "Ttl_Est_BF": null, "sale_#": null, "Paint Type": "Bulk", "Color": "Orange", "Prescription": null, "Common Practice Name": null }, "geometry": { "type": "MultiPolygon", "coordinates": [ [ [ [ 422477.806617647001985, 396079.624448529444635 ], [ 422522.198391544050537, 395992.206801470660139 ], [ 422520.83249080873793, 395878.154090073599946 ], [ 422439.561397058772855, 395818.054457720601931 ], [ 422266.774954044027254, 395783.223988970625214 ], [ 422215.553676470532082, 395804.39545036770869 ], [ 422140.185081229545176, 395804.434154333139304 ], [ 422141.643146442482248, 396096.639244563877583 ], [ 422477.806617647001985, 396079.624448529444635 ] ] ] ] } }
+{ "type": "Feature", "properties": { "fid": 16, "hrvst_type": "Marked Harvest", "notes": null, "Apprx_Cd-Ac": null, "Apprx_bf-ac": null, "Acres-feature": 25.533736260028739, "Acres-hrvst_type": null, "Calc_Cords": null, "Calc_BF": null, "Ttl_Est_Cds": null, "Ttl_Est_BF": null, "sale_#": null, "Paint Type": "Bulk", "Color": "Orange", "Prescription": null, "Common Practice Name": null }, "geometry": { "type": "MultiPolygon", "coordinates": [ [ [ [ -91.217017455839425, 44.031395251488874 ], [ -91.216447502966673, 44.030614264814467 ], [ -91.21644354792798, 44.029587445704742 ], [ -91.217446432242411, 44.029035665194826 ], [ -91.219595706402487, 44.028699155079885 ], [ -91.2202386543388, 44.028882906451557 ], [ -91.221178965271065, 44.028873210368332 ], [ -91.22121477763794, 44.03150366423062 ], [ -91.217017455839425, 44.031395251488874 ] ] ] ] } }
 ]
 }
