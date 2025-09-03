@@ -151,30 +151,10 @@
                 <div class="mt-2">Loading timber sale data...</div>
             </div>
         </div>
-        
-        <!-- CORS Fix Information -->
-        <div class="cors-fix-panel">
-            <h5>🔧 CORS Fix Applied</h5>
-            <p class="mb-2">This version includes multiple fallback methods to load your data:</p>
-            <ol class="mb-2">
-                <li><strong>Local file:</strong> Looks for <code>data/current.geojson</code> in your GitHub Pages repo</li>
-                <li><strong>Alternative URLs:</strong> Tries different GitHub content delivery methods</li>
-                <li><strong>GitHub API:</strong> Uses the GitHub API as a fallback</li>
-                <li><strong>Sample data:</strong> Loads example data if all else fails</li>
-            </ol>
-            <p class="mb-0"><small><strong>Recommended:</strong> Copy your <code>current.geojson</code> file directly to your GitHub Pages repository in a <code>data/</code> folder.</small></p>
-        </div>
-        
-        <!-- Configuration Info -->
-        <div id="configInfo" class="config-info">
-            <strong>⚙️ Configuration Status:</strong><br>
-            <div class="mt-2">
-                <strong>Primary Data URL:</strong><br>
-                <div class="config-url" id="dataUrlDisplay"></div>
-            </div>
-            <div class="mt-2 text-muted">
-                <small>💡 Multiple fallback methods are now configured to handle CORS issues.</small>
-            </div>
+
+        <!-- Test Project Banner -->
+        <div class="alert alert-warning mb-3" role="alert">
+            <strong>⚠️ Test Environment</strong> - This is a test project for development purposes only and is not intended for current production use.
         </div>
         
         <!-- Last Updated Info -->
@@ -367,11 +347,6 @@
         function initializeApplication() {
             console.log('🌲 Timber Sale Areas Viewer - Initializing...');
             
-            // Show configuration information
-            if (CONFIG.showConfigInfo) {
-                showConfigurationInfo();
-            }
-            
             // Attempt to auto-load data with multiple fallbacks
             autoLoadDataWithFallback();
             
@@ -381,11 +356,6 @@
             }
             
             console.log('✅ Application initialized successfully');
-        }
-        
-        function showConfigurationInfo() {
-            document.getElementById('dataUrlDisplay').textContent = CONFIG.dataUrls[0];
-            document.getElementById('configInfo').style.display = 'block';
         }
         
         // ====================================================================
