@@ -32,6 +32,29 @@
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
         
+        /* Custom popup styles for smaller, scrollable popups */
+        .leaflet-popup {
+            max-width: 300px !important;
+            max-height: 250px !important;
+        }
+        
+        .leaflet-popup-content-wrapper {
+            max-height: 250px !important;
+            overflow: hidden !important;
+        }
+        
+        .leaflet-popup-content {
+            max-height: 220px !important;
+            overflow-y: auto !important;
+            margin: 12px 16px !important;
+            font-size: 13px !important;
+            line-height: 1.4 !important;
+        }
+        
+        .leaflet-popup-scrolled {
+            padding-right: 8px;
+        }
+        
         /* Auto-update notification styles */
         .update-notification {
             position: fixed;
@@ -112,11 +135,14 @@
             font-weight: bold;
             margin-bottom: 0.5rem;
             color: #2d5016;
-            font-size: 1.1rem;
+            font-size: 1.0rem;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 0.3rem;
         }
         
         .popup-field {
-            margin-bottom: 0.3rem;
+            margin-bottom: 0.25rem;
+            font-size: 0.85rem;
         }
         
         .popup-label {
@@ -130,6 +156,14 @@
             padding: 1rem;
             border-radius: 8px;
             margin-bottom: 1rem;
+        }
+
+        /* URL column styling */
+        .url-cell {
+            max-width: 150px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
     </style>
 </head>
@@ -254,6 +288,7 @@
                             <th>Species</th>
                             <th>Status</th>
                             <th>Sale Date</th>
+                            <th>URL</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -317,7 +352,7 @@
             maxZoom: 18
         }).addTo(map);
         
-        // Initialize DataTable
+        // Initialize DataTable with URL column
         let dataTable = $('#saleAreasTable').DataTable({
             responsive: true,
             pageLength: 10,
@@ -329,7 +364,22 @@
                         return parseFloat(data || 0).toLocaleString() + ' ac'; 
                     }
                 },
-                { targets: [6], orderable: false }
+                {
+                    targets: [6], // URL column
+                    render: function(data, type, row) {
+                        if (!data || data === 'N/A') {
+                            return '<span class="text-muted">None</span>';
+                        }
+                        if (type === 'display') {
+                            const shortUrl = data.length > 30 ? data.substring(0, 30) + '...' : data;
+                            return `<div class="url-cell" title="${data}">
+                                        <a href="${data}" target="_blank" class="text-primary">${shortUrl}</a>
+                                    </div>`;
+                        }
+                        return data;
+                    }
+                },
+                { targets: [7], orderable: false } // Actions column moved to index 7
             ],
             language: {
                 emptyTable: "No timber sale areas loaded. Upload a GeoJSON file or load sample data to get started."
@@ -546,7 +596,8 @@
                             "acres": 45.7,
                             "species": "Oak, Maple",
                             "status": "active",
-                            "sale_date": "2024-03-15"
+                            "sale_date": "2024-03-15",
+                            "url": "https://example.com/sale001"
                         },
                         "geometry": {
                             "type": "Polygon",
@@ -567,7 +618,8 @@
                             "acres": 23.2,
                             "species": "Pine, Birch",
                             "status": "planned",
-                            "sale_date": "2024-06-01"
+                            "sale_date": "2024-06-01",
+                            "url": "https://example.com/sale002"
                         },
                         "geometry": {
                             "type": "Polygon",
@@ -656,7 +708,13 @@
                 },
                 onEachFeature: function(feature, layer) {
                     const popupContent = createPopupContent(feature.properties);
-                    layer.bindPopup(popupContent);
+                    layer.bindPopup(popupContent, {
+                        maxWidth: 300,
+                        maxHeight: 250,
+                        closeButton: true,
+                        autoPan: true,
+                        keepInView: true
+                    });
                     
                     layer.on('click', function() {
                         map.fitBounds(layer.getBounds());
@@ -710,7 +768,10 @@
                 { key: 'status', label: 'Status' },
                 { key: 'sale_date', label: 'Sale Date' },
                 { key: 'harvest_date', label: 'Harvest Date' },
-                { key: 'bid_link', label: 'Bid Link' }
+                { key: 'bid_link', label: 'Bid Link' },
+                { key: 'url', label: 'URL' },
+                { key: 'link', label: 'Link' },
+                { key: 'website', label: 'Website' }
             ];
             
             // Add ordered fields first
@@ -732,7 +793,8 @@
                 const isOrderedField = fieldOrder.some(field => field.key === key);
                 if (!isOrderedField && properties[key] !== null && properties[key] !== undefined && properties[key] !== '') {
                     const label = formatFieldName(key);
-                    popupContent += `<div class="popup-field"><span class="popup-label">${label}:</span> ${properties[key]}</div>`;
+                    const value = makeUrlsClickable(properties[key]);
+                    popupContent += `<div class="popup-field"><span class="popup-label">${label}:</span> ${value}</div>`;
                 }
             });
             
@@ -766,22 +828,13 @@
                 const status = props.status || 'active';
                 const saleDate = props.sale_date || props.harvest_date || 'N/A';
                 
-                // Check for URL in properties
-                let urlButton = '';
-                if (props.url || props.link || props.website) {
-                    const url = props.url || props.link || props.website;
-                    urlButton = `
-                        <a href="${url}" target="_blank" class="btn btn-sm btn-outline-info ml-1" title="View details">
-                            🔗
-                        </a>
-                    `;
-                }
+                // Extract URL from multiple possible fields
+                const url = props.url || props.link || props.website || props.bid_link || '';
                 
                 const actionButtons = `
                     <button class="btn btn-sm btn-outline-primary" onclick="zoomToFeature(${index})" title="Zoom to area">
                         🔍
                     </button>
-                    ${urlButton}
                 `;
                 
                 dataTable.row.add([
@@ -791,6 +844,7 @@
                     species,
                     `<span class="badge" style="background-color: ${getStatusColor(status)}; color: white;">${status}</span>`,
                     saleDate,
+                    url || 'N/A', // URL column
                     actionButtons
                 ]);
             });
