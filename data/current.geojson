@@ -10,7 +10,7 @@
         "volume": "367,910 BF | 450 Cords",
         "species": "Red/Black/White Oak, Red Maple, Red Pine, & Mx HWD",
         "location": "Town of Curran, Jackson County, WI",
-        "status": "active",
+        "status": "Sale Closed",
         "bid_due": "Wednesday September 10 @ 12PM",
         "prospectus_url": "https://drive.google.com/file/d/1VHPuaa89CwioWkWfnxrPUDjpP62b-bJ_/view?usp=drive_link"
       },
@@ -34,7 +34,7 @@
         "volume": "69,600 BF | 200 Cords",
         "species": "Red/White/Black Oak, Red Maple, & Mx HWD",
         "location": "Town of Franklin, Jackson County, WI",
-        "status": "active",
+        "status": "past sale",
         "bid_due": "Wednesday September 10 @ 12PM",
         "prospectus_url": "https://drive.google.com/file/d/1tVlVKGJsIdmVRJoqw9maIl0x3A53CA7E/view?usp=drive_link"
       },
@@ -58,7 +58,7 @@
         "volume": "15,430 BF",
         "species": "Sugar Maple, Walnut, Red Oak & Mx HWD",
         "location": "Town of Bergen, Vernon County, WI",
-        "status": "active",
+        "status": "past sale",
         "bid_due": "Wednesday September 10 @ 12PM",
         "prospectus_url": "https://drive.google.com/file/d/1QggeSbFMOc7rcWIRQGHqMq7nGVZgxkMt/view?usp=drive_link"
       },
@@ -82,7 +82,7 @@
         "volume": "130,679 BF",
         "species": "Red/Black/White Oak, Basswood, Cherry, Hickory, Mx HWD",
         "location": "Town of Holland, La Crosse County, WI",
-        "status": "active",
+        "status": "past sale",
         "bid_due": "Wednesday September 10 @ 12PM",
         "prospectus_url": "https://drive.google.com/file/d/1N3blnwatMANAOfLCBNf7rPj2K00hMvrN/view?usp=drive_link"
       },
@@ -106,7 +106,7 @@
         "volume": "445 Cords",
         "species": "Black, White, Red Oak, Aspen, Red Maple, White Pine",
         "location": "Town of Byron, Monroe County, WI",
-        "status": "active",
+        "status": "past sale",
         "bid_due": "Wednesday September 10 @ 12PM",
         "prospectus_url": "https://drive.google.com/file/d/14Br8VG1LHe9Ra_WPyrQYkhw9wtAv1ETM/view?usp=drive_link"
       },
@@ -130,7 +130,7 @@
         "volume": "142,900 BF | 211 Cords",
         "species": "Red/White/Black Oak, Red Maple, & Mx HWD",
         "location": "Town of Irving, Jackson County, WI",
-        "status": "active",
+        "status": "past sale",
         "bid_due": "Wednesday September 10 @ 12PM",
         "prospectus_url": "https://drive.google.com/file/d/1PIF6CQkaf67ZnOFEKLv_KtKmTJiwGvAW/view?usp=drive_link"
       },
@@ -154,7 +154,7 @@
         "volume": "62,540 BF",
         "species": "Red/Black/White Oak, Aspen, Red Maple, Basswood, Cherry, Hickory, Mx HWD",
         "location": "Town of Coon, Vernon County, WI",
-        "status": "active",
+        "status": "past sale",
         "bid_due": "Wednesday September 10 @ 12PM",
         "prospectus_url": "https://drive.google.com/file/d/1PBnN_iJJCBaVNAyE09J8y5nMoX_E4FEy/view?usp=drive_link"
       },
@@ -166,6 +166,102 @@
           [-90.6, 43.6],
           [-90.7, 43.6],
           [-90.7, 43.7]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "25-08",
+        "name": "BMP63 LLC",
+        "acres": 31,
+        "volume": "266 Cords",
+        "species": "Red/Jack/White Pine Black/White Oak, Red Maple & Mx HWD",
+        "location": "Town of Scott, Monroe County, WI",
+        "status": "active",
+        "bid_due": "Wednesday October 15 @ 12PM",
+        "prospectus_url": "https://drive.google.com/file/d/1vWXjGqafc2RhXhLsIObIMhryH9cK9OYM/view?usp=drive_link"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-90.3, 43.9],
+          [-90.2, 43.9],
+          [-90.2, 43.8],
+          [-90.3, 43.8],
+          [-90.3, 43.9]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "25-15",
+        "name": "BERGDAHL",
+        "acres": 37,
+        "volume": "26,800 BF | 431 Cords",
+        "species": "Red Pine, Red/White Oak, Red Maple",
+        "location": "Town of Rock, Wood County, WI",
+        "status": "active",
+        "bid_due": "Wednesday October 15 @ 12PM",
+        "prospectus_url": "https://drive.google.com/file/d/1CN_EosSYroY92IpbT6d4LTg94t5z10E5/view?usp=drive_link"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-89.8, 44.4],
+          [-89.7, 44.4],
+          [-89.7, 44.3],
+          [-89.8, 44.3],
+          [-89.8, 44.4]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "25-16",
+        "name": "PRINCIPLED LAND MANAGEMENT LLC",
+        "acres": 19,
+        "volume": "48,990 BF",
+        "species": "Red/Black/White Oak, Red Maple, Cherry & Mx HWD",
+        "location": "Town of Pleasant Valley, Eau Claire County, WI",
+        "status": "active",
+        "bid_due": "Wednesday October 15 @ 12PM",
+        "prospectus_url": "https://drive.google.com/file/d/1eDRyGJ70W9jWD28F12gvUFkQBOeBZ1Vv/view?usp=drive_link"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-91.2, 44.7],
+          [-91.1, 44.7],
+          [-91.1, 44.6],
+          [-91.2, 44.6],
+          [-91.2, 44.7]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "25-27",
+        "name": "SCHULTE",
+        "acres": 12,
+        "volume": "177 Cords",
+        "species": "Black/White Oak, Red Maple, White Pine Mx HWD",
+        "location": "Town of Alma, Jackson County, WI",
+        "status": "active",
+        "bid_due": "Wednesday October 15 @ 12PM",
+        "prospectus_url": "https://drive.google.com/file/d/1SpO_mAZ9GVqcZxHAgOWwrbJph4IUEIrG/view?usp=drive_link"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-90.9, 44.3],
+          [-90.8, 44.3],
+          [-90.8, 44.2],
+          [-90.9, 44.2],
+          [-90.9, 44.3]
         ]]
       }
     }
