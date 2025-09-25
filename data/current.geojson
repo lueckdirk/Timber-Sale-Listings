@@ -1,239 +1,171 @@
 {
   "type": "FeatureCollection",
-  "name": "timber_sales_temp",
-  "crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
   "features": [
     {
       "type": "Feature",
       "properties": {
-        "fid": 1,
-        "id": "TS-001",
-        "name": "North Ridge Timber Sale",
-        "sale_#": "TS-2024-001",
-        "hrvst_type": "Marked Harvest",
+        "id": "25-05",
+        "name": "AMI SILICA",
+        "acres": 165,
+        "volume": "367,910 BF | 450 Cords",
+        "species": "Red/Black/White Oak, Red Maple, Red Pine, & Mx HWD",
+        "location": "Town of Curran, Jackson County, WI",
         "status": "active",
-        "notes": "Selective harvest of mature oak and maple stands",
-        "Apprx_Cd-Ac": 15.2,
-        "Apprx_bf-ac": 8500,
-        "Acres-feature": 42.5,
-        "acres": 42.5,
-        "Acres-hrvst_type": 38.2,
-        "Calc_Cords": 580,
-        "Calc_BF": 325000,
-        "Ttl_Est_Cds": 580,
-        "Ttl_Est_BF": 325000,
-        "Paint Type": "Bulk",
-        "Color": "Orange",
-        "Prescription": "Selective harvest, retain 40% canopy cover",
-        "Common Practice Name": "Uneven-aged Management",
-        "species": "Oak, Maple, Hickory",
-        "sale_date": "2024-03-15",
-        "estimated_value": 145000,
-        "bid_link": "https://legacyforestmanagement.com/timber-for-sale/"
+        "bid_due": "Wednesday September 10 @ 12PM",
+        "prospectus_url": "https://drive.google.com/file/d/1VHPuaa89CwioWkWfnxrPUDjpP62b-bJ_/view?usp=drive_link"
       },
       "geometry": {
         "type": "Polygon",
         "coordinates": [[
-          [-91.220, 44.035],
-          [-91.215, 44.035],
-          [-91.215, 44.030],
-          [-91.220, 44.030],
-          [-91.220, 44.035]
+          [-90.8, 44.3],
+          [-90.7, 44.3],
+          [-90.7, 44.2],
+          [-90.8, 44.2],
+          [-90.8, 44.3]
         ]]
       }
     },
     {
       "type": "Feature",
       "properties": {
-        "fid": 2,
-        "id": "TS-002",
-        "name": "Creek Bottom Harvest",
-        "sale_#": "TS-2024-002",
-        "hrvst_type": "Clear Cut",
-        "status": "planned",
-        "notes": "Aspen regeneration harvest near creek drainage",
-        "Apprx_Cd-Ac": 22.8,
-        "Apprx_bf-ac": 12500,
-        "Acres-feature": 28.7,
-        "acres": 28.7,
-        "Acres-hrvst_type": 26.1,
-        "Calc_Cords": 655,
-        "Calc_BF": 358750,
-        "Ttl_Est_Cds": 655,
-        "Ttl_Est_BF": 358750,
-        "Paint Type": "Individual",
-        "Color": "Blue",
-        "Prescription": "Clear cut with seed tree retention",
-        "Common Practice Name": "Even-aged Management",
-        "species": "Aspen, Birch, Basswood",
-        "sale_date": "2024-06-01",
-        "estimated_value": 89500,
-        "bid_link": "https://legacyforestmanagement.com/timber-for-sale/"
-      },
-      "geometry": {
-        "type": "Polygon",
-        "coordinates": [[
-          [-91.210, 44.040],
-          [-91.205, 44.040],
-          [-91.205, 44.035],
-          [-91.210, 44.035],
-          [-91.210, 44.040]
-        ]]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "fid": 3,
-        "id": "TS-003",
-        "name": "South Slope Selective Cut",
-        "sale_#": "TS-2024-003",
-        "hrvst_type": "Marked Harvest",
-        "status": "completed",
-        "notes": "High-value walnut and cherry harvest completed",
-        "Apprx_Cd-Ac": 18.5,
-        "Apprx_bf-ac": 15200,
-        "Acres-feature": 35.2,
-        "acres": 35.2,
-        "Acres-hrvst_type": 32.8,
-        "Calc_Cords": 651,
-        "Calc_BF": 534240,
-        "Ttl_Est_Cds": 651,
-        "Ttl_Est_BF": 534240,
-        "Paint Type": "Bulk",
-        "Color": "Orange",
-        "Prescription": "Diameter limit cut - 16 inch DBH minimum",
-        "Common Practice Name": "High-grade Selection",
-        "species": "Black Walnut, Cherry, Oak",
-        "sale_date": "2023-11-20",
-        "estimated_value": 285000,
-        "bid_link": "https://legacyforestmanagement.com/timber-for-sale/"
-      },
-      "geometry": {
-        "type": "Polygon",
-        "coordinates": [[
-          [-91.225, 44.025],
-          [-91.218, 44.025],
-          [-91.218, 44.020],
-          [-91.225, 44.020],
-          [-91.225, 44.025]
-        ]]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "fid": 4,
-        "id": "TS-004",
-        "name": "Pine Plantation Thinning",
-        "sale_#": "TS-2024-004",
-        "hrvst_type": "Marked Harvest",
+        "id": "25-13",
+        "name": "BOX FIRE LLC",
+        "acres": 41,
+        "volume": "69,600 BF | 200 Cords",
+        "species": "Red/White/Black Oak, Red Maple, & Mx HWD",
+        "location": "Town of Franklin, Jackson County, WI",
         "status": "active",
-        "notes": "First commercial thinning of 25-year pine plantation",
-        "Apprx_Cd-Ac": 12.0,
-        "Apprx_bf-ac": 6800,
-        "Acres-feature": 55.8,
-        "acres": 55.8,
-        "Acres-hrvst_type": 55.8,
-        "Calc_Cords": 670,
-        "Calc_BF": 379440,
-        "Ttl_Est_Cds": 670,
-        "Ttl_Est_BF": 379440,
-        "Paint Type": "Individual",
-        "Color": "Pink",
-        "Prescription": "Thin to 200 trees per acre spacing",
-        "Common Practice Name": "Commercial Thinning",
-        "species": "Red Pine, White Pine",
-        "sale_date": "2024-04-10",
-        "estimated_value": 95000,
-        "bid_link": "https://legacyforestmanagement.com/timber-for-sale/"
+        "bid_due": "Wednesday September 10 @ 12PM",
+        "prospectus_url": "https://drive.google.com/file/d/1tVlVKGJsIdmVRJoqw9maIl0x3A53CA7E/view?usp=drive_link"
       },
       "geometry": {
         "type": "Polygon",
         "coordinates": [[
-          [-91.200, 44.045],
-          [-91.190, 44.045],
-          [-91.190, 44.038],
-          [-91.200, 44.038],
-          [-91.200, 44.045]
+          [-90.6, 44.1],
+          [-90.5, 44.1],
+          [-90.5, 44.0],
+          [-90.6, 44.0],
+          [-90.6, 44.1]
         ]]
       }
     },
     {
       "type": "Feature",
       "properties": {
-        "fid": 5,
-        "id": "TS-005",
-        "name": "Wetland Edge Harvest",
-        "sale_#": "TS-2024-005",
-        "hrvst_type": "Marked Harvest",
-        "status": "pending",
-        "notes": "Careful harvest near wetland boundary, requires DNR approval",
-        "Apprx_Cd-Ac": 8.5,
-        "Apprx_bf-ac": 4200,
-        "Acres-feature": 18.3,
-        "acres": 18.3,
-        "Acres-hrvst_type": 15.6,
-        "Calc_Cords": 155,
-        "Calc_BF": 65520,
-        "Ttl_Est_Cds": 155,
-        "Ttl_Est_BF": 65520,
-        "Paint Type": "Individual",
-        "Color": "Yellow",
-        "Prescription": "Single tree selection, no equipment within 100ft of wetland",
-        "Common Practice Name": "Riparian Management",
-        "species": "Tamarack, Cedar, Ash",
-        "sale_date": "2024-08-15",
-        "estimated_value": 28500,
-        "bid_link": "https://legacyforestmanagement.com/timber-for-sale/"
+        "id": "25-02",
+        "name": "GRIESEL",
+        "acres": 8.5,
+        "volume": "15,430 BF",
+        "species": "Sugar Maple, Walnut, Red Oak & Mx HWD",
+        "location": "Town of Bergen, Vernon County, WI",
+        "status": "active",
+        "bid_due": "Wednesday September 10 @ 12PM",
+        "prospectus_url": "https://drive.google.com/file/d/1QggeSbFMOc7rcWIRQGHqMq7nGVZgxkMt/view?usp=drive_link"
       },
       "geometry": {
         "type": "Polygon",
         "coordinates": [[
-          [-91.235, 44.042],
-          [-91.230, 44.042],
-          [-91.230, 44.037],
-          [-91.235, 44.037],
-          [-91.235, 44.042]
+          [-90.9, 43.6],
+          [-90.85, 43.6],
+          [-90.85, 43.55],
+          [-90.9, 43.55],
+          [-90.9, 43.6]
         ]]
       }
     },
     {
       "type": "Feature",
       "properties": {
-        "fid": 6,
-        "id": "TS-006",
-        "name": "Oak Savanna Restoration",
-        "sale_#": "TS-2024-006",
-        "hrvst_type": "Clear Cut",
-        "status": "planned",
-        "notes": "Restoration harvest to recreate oak savanna ecosystem",
-        "Apprx_Cd-Ac": 5.2,
-        "Apprx_bf-ac": 2800,
-        "Acres-feature": 65.4,
-        "acres": 65.4,
-        "Acres-hrvst_type": 45.8,
-        "Calc_Cords": 238,
-        "Calc_BF": 128240,
-        "Ttl_Est_Cds": 238,
-        "Ttl_Est_BF": 128240,
-        "Paint Type": "Bulk",
-        "Color": "Red",
-        "Prescription": "Remove understory, retain 15-20 mature oaks per acre",
-        "Common Practice Name": "Ecological Restoration",
-        "species": "Oak, Hickory, scattered Pine",
-        "sale_date": "2024-09-30",
-        "estimated_value": 42000,
-        "bid_link": "https://legacyforestmanagement.com/timber-for-sale/"
+        "id": "25-11",
+        "name": "KOONCE",
+        "acres": 66,
+        "volume": "130,679 BF",
+        "species": "Red/Black/White Oak, Basswood, Cherry, Hickory, Mx HWD",
+        "location": "Town of Holland, La Crosse County, WI",
+        "status": "active",
+        "bid_due": "Wednesday September 10 @ 12PM",
+        "prospectus_url": "https://drive.google.com/file/d/1N3blnwatMANAOfLCBNf7rPj2K00hMvrN/view?usp=drive_link"
       },
       "geometry": {
         "type": "Polygon",
         "coordinates": [[
-          [-91.195, 44.028],
-          [-91.185, 44.028],
-          [-91.185, 44.018],
-          [-91.195, 44.018],
-          [-91.195, 44.028]
+          [-91.1, 43.9],
+          [-91.0, 43.9],
+          [-91.0, 43.8],
+          [-91.1, 43.8],
+          [-91.1, 43.9]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "25-09",
+        "name": "MANDERFIELD",
+        "acres": 38,
+        "volume": "445 Cords",
+        "species": "Black, White, Red Oak, Aspen, Red Maple, White Pine",
+        "location": "Town of Byron, Monroe County, WI",
+        "status": "active",
+        "bid_due": "Wednesday September 10 @ 12PM",
+        "prospectus_url": "https://drive.google.com/file/d/14Br8VG1LHe9Ra_WPyrQYkhw9wtAv1ETM/view?usp=drive_link"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-90.4, 43.8],
+          [-90.3, 43.8],
+          [-90.3, 43.7],
+          [-90.4, 43.7],
+          [-90.4, 43.8]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "25-14",
+        "name": "RADCLIFFE BROTHERS LLC",
+        "acres": 40,
+        "volume": "142,900 BF | 211 Cords",
+        "species": "Red/White/Black Oak, Red Maple, & Mx HWD",
+        "location": "Town of Irving, Jackson County, WI",
+        "status": "active",
+        "bid_due": "Wednesday September 10 @ 12PM",
+        "prospectus_url": "https://drive.google.com/file/d/1PIF6CQkaf67ZnOFEKLv_KtKmTJiwGvAW/view?usp=drive_link"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-90.5, 44.4],
+          [-90.4, 44.4],
+          [-90.4, 44.3],
+          [-90.5, 44.3],
+          [-90.5, 44.4]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "25-10",
+        "name": "WAHLEN",
+        "acres": 35,
+        "volume": "62,540 BF",
+        "species": "Red/Black/White Oak, Aspen, Red Maple, Basswood, Cherry, Hickory, Mx HWD",
+        "location": "Town of Coon, Vernon County, WI",
+        "status": "active",
+        "bid_due": "Wednesday September 10 @ 12PM",
+        "prospectus_url": "https://drive.google.com/file/d/1PBnN_iJJCBaVNAyE09J8y5nMoX_E4FEy/view?usp=drive_link"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-90.7, 43.7],
+          [-90.6, 43.7],
+          [-90.6, 43.6],
+          [-90.7, 43.6],
+          [-90.7, 43.7]
         ]]
       }
     }
