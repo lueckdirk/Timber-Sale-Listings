@@ -162,7 +162,7 @@
         }
 
         .pdf-link {
-            background: #007bff;
+            background: #28a745;
             color: white;
             padding: 0.25rem 0.5rem;
             border-radius: 4px;
@@ -170,12 +170,52 @@
             font-size: 0.8rem;
             display: inline-block;
             margin-top: 0.25rem;
+            border: 1px solid #1e7e34;
         }
 
         .pdf-link:hover {
-            background: #0056b3;
+            background: #218838;
             color: white;
             text-decoration: none;
+            border-color: #1c7430;
+        }
+
+        .layer-controls {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 12px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            font-size: 0.85rem;
+            min-width: 170px;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .layer-control-item {
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+        }
+
+        .layer-control-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .layer-control-item input[type="checkbox"],
+        .layer-control-item input[type="radio"] {
+            margin-right: 8px;
+        }
+
+        .layer-control-title {
+            font-weight: bold;
+            margin-bottom: 8px;
+            padding-bottom: 4px;
+            border-bottom: 1px solid #ddd;
+            color: #2d5016;
         }
     </style>
 </head>
@@ -248,9 +288,37 @@
             </div>
         </div>
         
-        <!-- Map Container -->
+        <!-- Map Container with Controls -->
         <div class="map-container">
             <div id="map"></div>
+            <!-- Layer Controls Panel -->
+            <div class="layer-controls">
+                <div class="layer-control-title">🗺️ Map Controls</div>
+                
+                <div style="margin-bottom: 12px;">
+                    <strong>Base Layers:</strong>
+                </div>
+                <div class="layer-control-item">
+                    <input type="radio" id="osm" name="baseLayer" value="osm" checked>
+                    <label for="osm">Street Map</label>
+                </div>
+                <div class="layer-control-item">
+                    <input type="radio" id="satellite" name="baseLayer" value="satellite">
+                    <label for="satellite">Satellite</label>
+                </div>
+                <div class="layer-control-item">
+                    <input type="radio" id="topo" name="baseLayer" value="topo">
+                    <label for="topo">Topography</label>
+                </div>
+                
+                <div style="margin: 12px 0 8px 0; border-top: 1px solid #ddd; padding-top: 8px;">
+                    <strong>Data Layers:</strong>
+                </div>
+                <div class="layer-control-item">
+                    <input type="checkbox" id="timberAreas" checked>
+                    <label for="timberAreas">Timber Sale Areas</label>
+                </div>
+            </div>
         </div>
         
         <!-- Data Table -->
@@ -284,11 +352,24 @@
         let currentData = [];
         let lastUpdateTime = null;
         
-        // Add base map tiles
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors',
-            maxZoom: 18
-        }).addTo(map);
+        // Base map layers
+        let baseLayers = {
+            'Street Map': L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 18
+            }),
+            'Satellite': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                attribution: '© Esri, Maxar, GeoEye, Earthstar Geographics, CNES/Airbus DS, USDA, USGS, AeroGRID, IGN, and the GIS User Community',
+                maxZoom: 18
+            }),
+            'Topography': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
+                attribution: '© Esri, HERE, Garmin, Intermap, increment P Corp., GEBCO, USGS, FAO, NPS, NRCAN, GeoBase, IGN, Kadaster NL, Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), (c) OpenStreetMap contributors, and the GIS User Community',
+                maxZoom: 18
+            })
+        };
+        
+        // Add default base layer
+        baseLayers['Street Map'].addTo(map);
         
         // Initialize DataTable
         let dataTable = $('#saleAreasTable').DataTable({
@@ -318,189 +399,135 @@
             ]
         });
         
-        // Timber sale data
-        const timberSaleData = {
-            "type": "FeatureCollection",
-            "features": [
-                {
-                    "type": "Feature",
-                    "properties": {
-                        "id": "25-05",
-                        "name": "AMI SILICA",
-                        "acres": 165,
-                        "volume": "367,910 BF | 450 Cords",
-                        "species": "Red/Black/White Oak, Red Maple, Red Pine, & Mx HWD",
-                        "location": "Town of Curran, Jackson County, WI",
-                        "status": "active",
-                        "bid_due": "Wednesday September 10 @ 12PM",
-                        "prospectus_url": "https://drive.google.com/file/d/1VHPuaa89CwioWkWfnxrPUDjpP62b-bJ_/view?usp=drive_link"
-                    },
-                    "geometry": {
-                        "type": "Polygon",
-                        "coordinates": [[
-                            [-90.8, 44.3],
-                            [-90.7, 44.3],
-                            [-90.7, 44.2],
-                            [-90.8, 44.2],
-                            [-90.8, 44.3]
-                        ]]
-                    }
-                },
-                {
-                    "type": "Feature",
-                    "properties": {
-                        "id": "25-13",
-                        "name": "BOX FIRE LLC",
-                        "acres": 41,
-                        "volume": "69,600 BF | 200 Cords",
-                        "species": "Red/White/Black Oak, Red Maple, & Mx HWD",
-                        "location": "Town of Franklin, Jackson County, WI",
-                        "status": "active",
-                        "bid_due": "Wednesday September 10 @ 12PM",
-                        "prospectus_url": "https://drive.google.com/file/d/1tVlVKGJsIdmVRJoqw9maIl0x3A53CA7E/view?usp=drive_link"
-                    },
-                    "geometry": {
-                        "type": "Polygon",
-                        "coordinates": [[
-                            [-90.6, 44.1],
-                            [-90.5, 44.1],
-                            [-90.5, 44.0],
-                            [-90.6, 44.0],
-                            [-90.6, 44.1]
-                        ]]
-                    }
-                },
-                {
-                    "type": "Feature",
-                    "properties": {
-                        "id": "25-02",
-                        "name": "GRIESEL",
-                        "acres": 8.5,
-                        "volume": "15,430 BF",
-                        "species": "Sugar Maple, Walnut, Red Oak & Mx HWD",
-                        "location": "Town of Bergen, Vernon County, WI",
-                        "status": "active",
-                        "bid_due": "Wednesday September 10 @ 12PM",
-                        "prospectus_url": "https://drive.google.com/file/d/1QggeSbFMOc7rcWIRQGHqMq7nGVZgxkMt/view?usp=drive_link"
-                    },
-                    "geometry": {
-                        "type": "Polygon",
-                        "coordinates": [[
-                            [-90.9, 43.6],
-                            [-90.85, 43.6],
-                            [-90.85, 43.55],
-                            [-90.9, 43.55],
-                            [-90.9, 43.6]
-                        ]]
-                    }
-                },
-                {
-                    "type": "Feature",
-                    "properties": {
-                        "id": "25-11",
-                        "name": "KOONCE",
-                        "acres": 66,
-                        "volume": "130,679 BF",
-                        "species": "Red/Black/White Oak, Basswood, Cherry, Hickory, Mx HWD",
-                        "location": "Town of Holland, La Crosse County, WI",
-                        "status": "active",
-                        "bid_due": "Wednesday September 10 @ 12PM",
-                        "prospectus_url": "https://drive.google.com/file/d/1N3blnwatMANAOfLCBNf7rPj2K00hMvrN/view?usp=drive_link"
-                    },
-                    "geometry": {
-                        "type": "Polygon",
-                        "coordinates": [[
-                            [-91.1, 43.9],
-                            [-91.0, 43.9],
-                            [-91.0, 43.8],
-                            [-91.1, 43.8],
-                            [-91.1, 43.9]
-                        ]]
-                    }
-                },
-                {
-                    "type": "Feature",
-                    "properties": {
-                        "id": "25-09",
-                        "name": "MANDERFIELD",
-                        "acres": 38,
-                        "volume": "445 Cords",
-                        "species": "Black, White, Red Oak, Aspen, Red Maple, White Pine",
-                        "location": "Town of Byron, Monroe County, WI",
-                        "status": "active",
-                        "bid_due": "Wednesday September 10 @ 12PM",
-                        "prospectus_url": "https://drive.google.com/file/d/14Br8VG1LHe9Ra_WPyrQYkhw9wtAv1ETM/view?usp=drive_link"
-                    },
-                    "geometry": {
-                        "type": "Polygon",
-                        "coordinates": [[
-                            [-90.4, 43.8],
-                            [-90.3, 43.8],
-                            [-90.3, 43.7],
-                            [-90.4, 43.7],
-                            [-90.4, 43.8]
-                        ]]
-                    }
-                },
-                {
-                    "type": "Feature",
-                    "properties": {
-                        "id": "25-14",
-                        "name": "RADCLIFFE BROTHERS LLC",
-                        "acres": 40,
-                        "volume": "142,900 BF | 211 Cords",
-                        "species": "Red/White/Black Oak, Red Maple, & Mx HWD",
-                        "location": "Town of Irving, Jackson County, WI",
-                        "status": "active",
-                        "bid_due": "Wednesday September 10 @ 12PM",
-                        "prospectus_url": "https://drive.google.com/file/d/1PIF6CQkaf67ZnOFEKLv_KtKmTJiwGvAW/view?usp=drive_link"
-                    },
-                    "geometry": {
-                        "type": "Polygon",
-                        "coordinates": [[
-                            [-90.5, 44.4],
-                            [-90.4, 44.4],
-                            [-90.4, 44.3],
-                            [-90.5, 44.3],
-                            [-90.5, 44.4]
-                        ]]
-                    }
-                },
-                {
-                    "type": "Feature",
-                    "properties": {
-                        "id": "25-10",
-                        "name": "WAHLEN",
-                        "acres": 35,
-                        "volume": "62,540 BF",
-                        "species": "Red/Black/White Oak, Aspen, Red Maple, Basswood, Cherry, Hickory, Mx HWD",
-                        "location": "Town of Coon, Vernon County, WI",
-                        "status": "active",
-                        "bid_due": "Wednesday September 10 @ 12PM",
-                        "prospectus_url": "https://drive.google.com/file/d/1PBnN_iJJCBaVNAyE09J8y5nMoX_E4FEy/view?usp=drive_link"
-                    },
-                    "geometry": {
-                        "type": "Polygon",
-                        "coordinates": [[
-                            [-90.7, 43.7],
-                            [-90.6, 43.7],
-                            [-90.6, 43.6],
-                            [-90.7, 43.6],
-                            [-90.7, 43.7]
-                        ]]
-                    }
-                }
-            ]
-        };
+        // Data will be loaded from external GeoJSON file
+        let timberSaleData = null;
         
         // Initialize application
         document.addEventListener('DOMContentLoaded', function() {
+            loadDataFromFile();
+            setupLayerControls();
+        });
+        
+        function setupLayerControls() {
+            // Base layer radio buttons
+            document.querySelectorAll('input[name="baseLayer"]').forEach(radio => {
+                radio.addEventListener('change', function() {
+                    // Remove current base layer
+                    Object.values(baseLayers).forEach(layer => {
+                        if (map.hasLayer(layer)) {
+                            map.removeLayer(layer);
+                        }
+                    });
+                    
+                    // Add selected base layer
+                    switch(this.value) {
+                        case 'osm':
+                            baseLayers['Street Map'].addTo(map);
+                            break;
+                        case 'satellite':
+                            baseLayers['Satellite'].addTo(map);
+                            break;
+                        case 'topo':
+                            baseLayers['Topography'].addTo(map);
+                            break;
+                    }
+                });
+            });
+            
+            // Timber areas toggle
+            document.getElementById('timberAreas').addEventListener('change', function() {
+                if (this.checked) {
+                    if (saleAreasLayer && timberSaleData) {
+                        saleAreasLayer.addTo(map);
+                    }
+                } else {
+                    if (saleAreasLayer && map.hasLayer(saleAreasLayer)) {
+                        map.removeLayer(saleAreasLayer);
+                    }
+                }
+            });
+        }
+        
+        async function loadDataFromFile() {
+            showLoading(true, 'Loading timber sale data...');
+            
+            try {
+                const response = await fetch('./data/current.geojson', {
+                    cache: 'no-cache',
+                    headers: {
+                        'Cache-Control': 'no-cache',
+                        'Pragma': 'no-cache'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                timberSaleData = await response.json();
+                
+                // Validate the data
+                if (!timberSaleData || !timberSaleData.features) {
+                    throw new Error('Invalid GeoJSON format - missing features array');
+                }
+                
+                loadTimberSaleData();
+                lastUpdateTime = new Date();
+                document.getElementById('updateTime').textContent = lastUpdateTime.toLocaleString();
+                showNotification(`Successfully loaded ${timberSaleData.features.length} timber sale areas!`, 'success');
+                
+            } catch (error) {
+                console.error('Failed to load data from file:', error);
+                showNotification(`Failed to load data: ${error.message}. Please ensure the data/current.geojson file exists.`, 'warning');
+                loadFallbackData(); // Load basic sample data if file loading fails
+            }
+            
+            showLoading(false);
+        }
+        
+        function loadFallbackData() {
+            // Fallback sample data in case the external file fails to load
+            timberSaleData = {
+                "type": "FeatureCollection",
+                "features": [
+                    {
+                        "type": "Feature",
+                        "properties": {
+                            "id": "SAMPLE",
+                            "name": "Sample Sale Area",
+                            "acres": 50,
+                            "volume": "Sample Volume",
+                            "species": "Mixed Hardwood",
+                            "location": "Wisconsin",
+                            "status": "active",
+                            "bid_due": "Sample Date",
+                            "prospectus_url": "#"
+                        },
+                        "geometry": {
+                            "type": "Polygon",
+                            "coordinates": [[
+                                [-90.0, 44.0],
+                                [-89.9, 44.0],
+                                [-89.9, 43.9],
+                                [-90.0, 43.9],
+                                [-90.0, 44.0]
+                            ]]
+                        }
+                    }
+                ]
+            };
+            
             loadTimberSaleData();
             lastUpdateTime = new Date();
             document.getElementById('updateTime').textContent = lastUpdateTime.toLocaleString();
-        });
+        }
         
         function loadTimberSaleData() {
+            if (!timberSaleData || !timberSaleData.features) {
+                console.error('No data available to load');
+                return;
+            }
+            
             // Clear existing data
             if (saleAreasLayer) {
                 map.removeLayer(saleAreasLayer);
@@ -540,9 +567,55 @@
                 map.fitBounds(saleAreasLayer.getBounds());
             }
             
-            // Update data table
-            currentData = timberSaleData.features;
-            populateDataTable(currentData);
+            // Update statistics based on actual data
+            updateStatistics(timberSaleData.features);
+        }
+        
+        function updateStatistics(features) {
+            const totalAreas = features.length;
+            const totalAcres = features.reduce((sum, feature) => {
+                const acres = parseFloat(feature.properties.acres || 0);
+                return sum + acres;
+            }, 0);
+            const avgSize = totalAreas > 0 ? totalAcres / totalAreas : 0;
+            const activeAreas = features.filter(feature => 
+                (feature.properties.status || 'active').toLowerCase() === 'active'
+            ).length;
+            
+            document.getElementById('totalAreas').textContent = totalAreas.toLocaleString();
+            document.getElementById('totalAcres').textContent = Math.round(totalAcres).toLocaleString();
+            document.getElementById('avgSize').textContent = Math.round(avgSize).toLocaleString();
+            document.getElementById('activeAreas').textContent = activeAreas.toLocaleString();
+        }
+
+        function showLoading(show, message = 'Loading...') {
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            if (show) {
+                loadingIndicator.querySelector('.mt-2').textContent = message;
+                loadingIndicator.style.display = 'block';
+            } else {
+                loadingIndicator.style.display = 'none';
+            }
+        }
+        
+        function showNotification(message, type = 'info', duration = 5000) {
+            const alertClass = `alert-${type}`;
+            const notification = $(`
+                <div class="alert ${alertClass} alert-dismissible fade show" style="position: fixed; top: 20px; right: 20px; z-index: 10000; max-width: 400px;" role="alert">
+                    ${message}
+                    <button type="button" class="close" data-dismiss="alert">
+                        <span>&times;</span>
+                    </button>
+                </div>
+            `);
+            
+            $('body').append(notification);
+            
+            if (duration > 0) {
+                setTimeout(() => {
+                    notification.alert('close');
+                }, duration);
+            }
         }
         
         function createPopupContent(properties) {
