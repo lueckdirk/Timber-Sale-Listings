@@ -814,3 +814,106 @@
                 const acres = parseFloat(feature.properties.acres || 0);
                 return sum + acres;
             }, 0);
+            const avgSize = totalAreas > 0 ? totalAcres / totalAreas : 0;
+            const activeAreas = features.filter(feature => 
+                (feature.properties.status || 'active').toLowerCase() === 'active'
+            ).length;
+            
+            document.getElementById('totalAreas').textContent = totalAreas.toLocaleString();
+            document.getElementById('totalAcres').textContent = Math.round(totalAcres).toLocaleString();
+            document.getElementById('avgSize').textContent = Math.round(avgSize).toLocaleString();
+            document.getElementById('activeAreas').textContent = activeAreas.toLocaleString();
+        }
+
+        function showLoading(show, message = 'Loading...') {
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            if (show) {
+                loadingIndicator.querySelector('.mt-2').textContent = message;
+                loadingIndicator.style.display = 'block';
+            } else {
+                loadingIndicator.style.display = 'none';
+            }
+        }
+        
+        function showNotification(message, type = 'info', duration = 5000) {
+            const alertClass = `alert-${type}`;
+            const notification = $(`
+                <div class="alert ${alertClass} alert-dismissible fade show" style="position: fixed; top: 20px; right: 20px; z-index: 10000; max-width: 400px;" role="alert">
+                    ${message}
+                    <button type="button" class="close" data-dismiss="alert">
+                        <span>&times;</span>
+                    </button>
+                </div>
+            `);
+            
+            $('body').append(notification);
+            
+            if (duration > 0) {
+                setTimeout(() => {
+                    notification.alert('close');
+                }, duration);
+            }
+        }
+        
+        function createPopupContent(properties) {
+            const status = (properties.status || 'active').toLowerCase();
+            const statusClass = status === 'active' ? 'active' : 'closed';
+            const statusText = status === 'active' ? 'Active' : 'Sale Closed';
+            
+            let popupContent = `<div class="popup-title">🌲 ${properties.name} #${properties.id}</div>`;
+            popupContent += `<div class="popup-field"><span class="popup-label">Status:</span> <span class="popup-status ${statusClass}">${statusText}</span></div>`;
+            popupContent += `<div class="popup-field"><span class="popup-label">Acres:</span> ${properties.acres.toLocaleString()} ac</div>`;
+            popupContent += `<div class="popup-field"><span class="popup-label">Volume:</span> ${properties.volume}</div>`;
+            popupContent += `<div class="popup-field"><span class="popup-label">Species:</span> ${properties.species}</div>`;
+            popupContent += `<div class="popup-field"><span class="popup-label">Location:</span> ${properties.location}</div>`;
+            popupContent += `<div class="popup-field"><span class="popup-label">Bid Due:</span> ${properties.bid_due}</div>`;
+            
+            if (properties.prospectus_url) {
+                popupContent += `<div class="popup-field"><a href="${properties.prospectus_url}" target="_blank" class="pdf-link">📄 View Prospectus PDF</a></div>`;
+            }
+            
+            return popupContent;
+        }
+        
+        function populateDataTable(features) {
+            dataTable.clear();
+            
+            features.forEach((feature, index) => {
+                const props = feature.properties;
+                
+                const actionButtons = `
+                    <button class="btn btn-sm btn-outline-primary" onclick="zoomToFeature(${index})" title="Zoom to area">
+                        🔍
+                    </button>
+                `;
+                
+                dataTable.row.add([
+                    `#${props.id}`,
+                    props.name,
+                    props.status || 'active',
+                    props.acres,
+                    props.volume,
+                    props.species,
+                    props.location,
+                    props.bid_due,
+                    props.prospectus_url || 'N/A',
+                    actionButtons
+                ]);
+            });
+            
+            dataTable.draw();
+        }
+        
+        function zoomToFeature(index) {
+            if (filteredData[index] && saleAreasLayer) {
+                const feature = filteredData[index];
+                const layer = saleAreasLayer.getLayers().find(l => l.feature === feature);
+                if (layer) {
+                    map.fitBounds(layer.getBounds());
+                    layer.openPopup();
+                }
+            }
+        }
+    </script>
+</body>
+</html>
