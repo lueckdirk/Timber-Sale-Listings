@@ -65,6 +65,97 @@
             margin-top: 1rem;
             text-align: center;
         }
+
+        /* Status toggle controls */
+        .status-toggle-panel {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .status-toggle {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #4a7c24;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        .status-legend {
+            display: flex;
+            gap: 2rem;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 3px;
+            border: 2px solid;
+        }
+
+        .legend-active {
+            background-color: #28a745;
+            border-color: #2d5016;
+        }
+
+        .legend-closed {
+            background-color: #6c757d;
+            border-color: #495057;
+        }
         
         /* Custom popup styles for smaller, scrollable popups */
         .leaflet-popup {
@@ -153,6 +244,24 @@
             color: #4a7c24;
         }
 
+        .popup-status {
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .popup-status.active {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .popup-status.closed {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
         /* URL column styling */
         .url-cell {
             max-width: 150px;
@@ -217,6 +326,25 @@
             border-bottom: 1px solid #ddd;
             color: #2d5016;
         }
+
+        /* Status badge in table */
+        .status-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .status-badge.active {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-badge.closed {
+            background: #f8d7da;
+            color: #721c24;
+        }
     </style>
 </head>
 <body>
@@ -237,9 +365,9 @@
         <!-- Bid Information Panel -->
         <div class="bid-info-panel">
             <h4><strong>Timber For Sale</strong></h4>
-            <p><strong><em>Bidding Open for the following sales: (updated: August 18, 2025)</em></strong></p>
+            <p><strong><em>Bidding Open for the following sales: (updated: September 25, 2025)</em></strong></p>
             <div class="bid-deadline">
-                <h5><strong>Bids Due SEPTEMBER 10, 2025 @ 12PM</strong></h5>
+                <h5><strong>Bids Due OCTOBER 15, 2025 @ 12PM</strong></h5>
                 <p><strong>Submit Bids to: bids@legacyforestmanagement.com<br>
                 101 1/2 N Water St. Sparta, WI 54656</strong></p>
             </div>
@@ -258,6 +386,29 @@
         <!-- Last Updated Info -->
         <div id="lastUpdated" class="last-updated">
             <span>📅 Data last updated: <span id="updateTime"></span></span>
+        </div>
+
+        <!-- Status Toggle Panel -->
+        <div class="status-toggle-panel">
+            <h5>📊 Sales Display Options</h5>
+            <div class="status-toggle">
+                <span><strong>Show Active Sales Only</strong></span>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="showClosedSales">
+                    <span class="slider"></span>
+                </label>
+                <span><strong>Include Closed Sales</strong></span>
+            </div>
+            <div class="status-legend">
+                <div class="legend-item">
+                    <div class="legend-color legend-active"></div>
+                    <span>Active Sales (Open for Bidding)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color legend-closed"></div>
+                    <span>Closed Sales (Bidding Ended)</span>
+                </div>
+            </div>
         </div>
         
         <!-- Statistics Cards -->
@@ -330,10 +481,12 @@
                         <tr>
                             <th>Sale ID</th>
                             <th>Property Name</th>
+                            <th>Status</th>
                             <th>Acres</th>
                             <th>Volume</th>
                             <th>Species</th>
                             <th>Location</th>
+                            <th>Bid Due</th>
                             <th>Prospectus</th>
                             <th>Actions</th>
                         </tr>
@@ -350,7 +503,9 @@
         let map = L.map('map').setView([44.0, -90.5], 8);
         let saleAreasLayer = null;
         let currentData = [];
+        let filteredData = [];
         let lastUpdateTime = null;
+        let showClosedSales = false;
         
         // Base map layers
         let baseLayers = {
@@ -377,14 +532,25 @@
             pageLength: 10,
             order: [[0, 'asc']],
             columnDefs: [
+                {
+                    targets: [2], // Status column
+                    render: function(data, type, row) {
+                        if (type === 'display') {
+                            const statusClass = data.toLowerCase() === 'active' ? 'active' : 'closed';
+                            const statusText = data.toLowerCase() === 'active' ? 'Active' : 'Sale Closed';
+                            return `<span class="status-badge ${statusClass}">${statusText}</span>`;
+                        }
+                        return data;
+                    }
+                },
                 { 
-                    targets: [2], 
+                    targets: [3], // Acres column
                     render: function(data) { 
                         return parseFloat(data || 0).toLocaleString() + ' ac'; 
                     }
                 },
                 {
-                    targets: [6], // Prospectus column
+                    targets: [8], // Prospectus column
                     render: function(data, type, row) {
                         if (!data || data === 'N/A') {
                             return '<span class="text-muted">None</span>';
@@ -395,7 +561,7 @@
                         return data;
                     }
                 },
-                { targets: [7], orderable: false } // Actions column
+                { targets: [9], orderable: false } // Actions column
             ]
         });
         
@@ -406,7 +572,93 @@
         document.addEventListener('DOMContentLoaded', function() {
             loadDataFromFile();
             setupLayerControls();
+            setupStatusToggle();
         });
+
+        function setupStatusToggle() {
+            const toggleCheckbox = document.getElementById('showClosedSales');
+            toggleCheckbox.addEventListener('change', function() {
+                showClosedSales = this.checked;
+                updateDisplayedData();
+            });
+        }
+
+        function updateDisplayedData() {
+            if (!timberSaleData) return;
+
+            // Filter data based on toggle setting
+            if (showClosedSales) {
+                filteredData = timberSaleData.features; // Show all
+            } else {
+                filteredData = timberSaleData.features.filter(feature => {
+                    const status = (feature.properties.status || 'active').toLowerCase();
+                    return status === 'active';
+                });
+            }
+
+            // Update map
+            updateMapDisplay();
+            
+            // Update table
+            populateDataTable(filteredData);
+            
+            // Update statistics
+            updateStatistics(filteredData);
+        }
+
+        function updateMapDisplay() {
+            // Clear existing layer
+            if (saleAreasLayer) {
+                map.removeLayer(saleAreasLayer);
+            }
+
+            // Create filtered GeoJSON
+            const filteredGeoJSON = {
+                type: "FeatureCollection",
+                features: filteredData
+            };
+
+            // Add filtered data to map
+            saleAreasLayer = L.geoJSON(filteredGeoJSON, {
+                style: function(feature) {
+                    const status = (feature.properties.status || 'active').toLowerCase();
+                    const isActive = status === 'active';
+                    
+                    return {
+                        fillColor: isActive ? '#28a745' : '#6c757d',
+                        weight: 2,
+                        opacity: 1,
+                        color: isActive ? '#2d5016' : '#495057',
+                        dashArray: isActive ? '3' : '8, 5',
+                        fillOpacity: isActive ? 0.6 : 0.4
+                    };
+                },
+                onEachFeature: function(feature, layer) {
+                    const popupContent = createPopupContent(feature.properties);
+                    layer.bindPopup(popupContent, {
+                        maxWidth: 350,
+                        maxHeight: 300,
+                        closeButton: true,
+                        autoPan: true,
+                        keepInView: true
+                    });
+                    
+                    layer.on('click', function() {
+                        map.fitBounds(layer.getBounds());
+                    });
+                }
+            });
+
+            // Add to map if timber areas checkbox is checked
+            if (document.getElementById('timberAreas').checked) {
+                saleAreasLayer.addTo(map);
+            }
+
+            // Fit map to data bounds if there's data
+            if (filteredData.length > 0) {
+                map.fitBounds(saleAreasLayer.getBounds());
+            }
+        }
         
         function setupLayerControls() {
             // Base layer radio buttons
@@ -437,7 +689,7 @@
             // Timber areas toggle
             document.getElementById('timberAreas').addEventListener('change', function() {
                 if (this.checked) {
-                    if (saleAreasLayer && timberSaleData) {
+                    if (saleAreasLayer) {
                         saleAreasLayer.addTo(map);
                     }
                 } else {
@@ -493,14 +745,14 @@
                     {
                         "type": "Feature",
                         "properties": {
-                            "id": "SAMPLE",
-                            "name": "Sample Sale Area",
+                            "id": "SAMPLE-ACTIVE",
+                            "name": "Sample Active Sale",
                             "acres": 50,
                             "volume": "Sample Volume",
                             "species": "Mixed Hardwood",
                             "location": "Wisconsin",
                             "status": "active",
-                            "bid_due": "Sample Date",
+                            "bid_due": "October 15, 2025 @ 12PM",
                             "prospectus_url": "#"
                         },
                         "geometry": {
@@ -511,6 +763,30 @@
                                 [-89.9, 43.9],
                                 [-90.0, 43.9],
                                 [-90.0, 44.0]
+                            ]]
+                        }
+                    },
+                    {
+                        "type": "Feature",
+                        "properties": {
+                            "id": "SAMPLE-CLOSED",
+                            "name": "Sample Closed Sale",
+                            "acres": 30,
+                            "volume": "Sample Volume",
+                            "species": "Mixed Hardwood",
+                            "location": "Wisconsin",
+                            "status": "Sale Closed",
+                            "bid_due": "September 10, 2025 @ 12PM",
+                            "prospectus_url": "#"
+                        },
+                        "geometry": {
+                            "type": "Polygon",
+                            "coordinates": [[
+                                [-90.2, 44.0],
+                                [-90.1, 44.0],
+                                [-90.1, 43.9],
+                                [-90.2, 43.9],
+                                [-90.2, 44.0]
                             ]]
                         }
                     }
@@ -528,47 +804,8 @@
                 return;
             }
             
-            // Clear existing data
-            if (saleAreasLayer) {
-                map.removeLayer(saleAreasLayer);
-            }
-            dataTable.clear();
-            
-            // Add GeoJSON to map
-            saleAreasLayer = L.geoJSON(timberSaleData, {
-                style: function(feature) {
-                    return {
-                        fillColor: '#28a745',
-                        weight: 2,
-                        opacity: 1,
-                        color: '#2d5016',
-                        dashArray: '3',
-                        fillOpacity: 0.6
-                    };
-                },
-                onEachFeature: function(feature, layer) {
-                    const popupContent = createPopupContent(feature.properties);
-                    layer.bindPopup(popupContent, {
-                        maxWidth: 350,
-                        maxHeight: 300,
-                        closeButton: true,
-                        autoPan: true,
-                        keepInView: true
-                    });
-                    
-                    layer.on('click', function() {
-                        map.fitBounds(layer.getBounds());
-                    });
-                }
-            }).addTo(map);
-            
-            // Fit map to data bounds
-            if (timberSaleData.features.length > 0) {
-                map.fitBounds(saleAreasLayer.getBounds());
-            }
-            
-            // Update statistics based on actual data
-            updateStatistics(timberSaleData.features);
+            currentData = timberSaleData.features;
+            updateDisplayedData();
         }
         
         function updateStatistics(features) {
@@ -577,100 +814,3 @@
                 const acres = parseFloat(feature.properties.acres || 0);
                 return sum + acres;
             }, 0);
-            const avgSize = totalAreas > 0 ? totalAcres / totalAreas : 0;
-            const activeAreas = features.filter(feature => 
-                (feature.properties.status || 'active').toLowerCase() === 'active'
-            ).length;
-            
-            document.getElementById('totalAreas').textContent = totalAreas.toLocaleString();
-            document.getElementById('totalAcres').textContent = Math.round(totalAcres).toLocaleString();
-            document.getElementById('avgSize').textContent = Math.round(avgSize).toLocaleString();
-            document.getElementById('activeAreas').textContent = activeAreas.toLocaleString();
-        }
-
-        function showLoading(show, message = 'Loading...') {
-            const loadingIndicator = document.getElementById('loadingIndicator');
-            if (show) {
-                loadingIndicator.querySelector('.mt-2').textContent = message;
-                loadingIndicator.style.display = 'block';
-            } else {
-                loadingIndicator.style.display = 'none';
-            }
-        }
-        
-        function showNotification(message, type = 'info', duration = 5000) {
-            const alertClass = `alert-${type}`;
-            const notification = $(`
-                <div class="alert ${alertClass} alert-dismissible fade show" style="position: fixed; top: 20px; right: 20px; z-index: 10000; max-width: 400px;" role="alert">
-                    ${message}
-                    <button type="button" class="close" data-dismiss="alert">
-                        <span>&times;</span>
-                    </button>
-                </div>
-            `);
-            
-            $('body').append(notification);
-            
-            if (duration > 0) {
-                setTimeout(() => {
-                    notification.alert('close');
-                }, duration);
-            }
-        }
-        
-        function createPopupContent(properties) {
-            let popupContent = `<div class="popup-title">🌲 ${properties.name} #${properties.id}</div>`;
-            
-            popupContent += `<div class="popup-field"><span class="popup-label">Acres:</span> ${properties.acres.toLocaleString()} ac</div>`;
-            popupContent += `<div class="popup-field"><span class="popup-label">Volume:</span> ${properties.volume}</div>`;
-            popupContent += `<div class="popup-field"><span class="popup-label">Species:</span> ${properties.species}</div>`;
-            popupContent += `<div class="popup-field"><span class="popup-label">Location:</span> ${properties.location}</div>`;
-            popupContent += `<div class="popup-field"><span class="popup-label">Bid Due:</span> ${properties.bid_due}</div>`;
-            
-            if (properties.prospectus_url) {
-                popupContent += `<div class="popup-field"><a href="${properties.prospectus_url}" target="_blank" class="pdf-link">📄 View Prospectus PDF</a></div>`;
-            }
-            
-            return popupContent;
-        }
-        
-        function populateDataTable(features) {
-            dataTable.clear();
-            
-            features.forEach((feature, index) => {
-                const props = feature.properties;
-                
-                const actionButtons = `
-                    <button class="btn btn-sm btn-outline-primary" onclick="zoomToFeature(${index})" title="Zoom to area">
-                        🔍
-                    </button>
-                `;
-                
-                dataTable.row.add([
-                    `#${props.id}`,
-                    props.name,
-                    props.acres,
-                    props.volume,
-                    props.species,
-                    props.location,
-                    props.prospectus_url || 'N/A',
-                    actionButtons
-                ]);
-            });
-            
-            dataTable.draw();
-        }
-        
-        function zoomToFeature(index) {
-            if (currentData[index] && saleAreasLayer) {
-                const feature = currentData[index];
-                const layer = saleAreasLayer.getLayers().find(l => l.feature === feature);
-                if (layer) {
-                    map.fitBounds(layer.getBounds());
-                    layer.openPopup();
-                }
-            }
-        }
-    </script>
-</body>
-</html>
