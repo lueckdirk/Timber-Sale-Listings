@@ -716,16 +716,45 @@
         }
 
         function getPolygonCenter(coordinates) {
-            // Calculate centroid of polygon
-            let sumLat = 0, sumLng = 0, count = 0;
-            
-            coordinates[0].forEach(coord => {
-                sumLng += coord[0];
-                sumLat += coord[1];
-                count++;
-            });
-            
-            return [sumLat / count, sumLng / count];
+            try {
+                // Handle both Polygon and MultiPolygon
+                let coords;
+                
+                if (coordinates[0] && Array.isArray(coordinates[0])) {
+                    if (Array.isArray(coordinates[0][0]) && Array.isArray(coordinates[0][0][0])) {
+                        // MultiPolygon: [[[lng, lat], [lng, lat]]]
+                        coords = coordinates[0][0];
+                    } else {
+                        // Polygon: [[lng, lat], [lng, lat]]
+                        coords = coordinates[0];
+                    }
+                } else {
+                    coords = coordinates;
+                }
+                
+                let sumLat = 0, sumLng = 0, count = 0;
+                
+                for (let i = 0; i < coords.length; i++) {
+                    const lng = parseFloat(coords[i][0]);
+                    const lat = parseFloat(coords[i][1]);
+                    
+                    if (!isNaN(lng) && !isNaN(lat)) {
+                        sumLng += lng;
+                        sumLat += lat;
+                        count++;
+                    }
+                }
+                
+                if (count === 0) {
+                    throw new Error('No valid coordinates');
+                }
+                
+                return [sumLat / count, sumLng / count];
+                
+            } catch (error) {
+                console.error('Error calculating polygon center:', error, coordinates);
+                return [44.0, -90.5]; // Default fallback to Wisconsin
+            }
         }
 
         function updateMapDisplay() {
