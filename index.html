@@ -867,7 +867,7 @@
             showLoading(true, 'Loading timber sale data...');
             
             try {
-                const response = await fetch('/data/current.geojson', {
+                const response = await fetch('./data/current.geojson', {
                     cache: 'no-cache',
                     headers: {
                         'Cache-Control': 'no-cache',
