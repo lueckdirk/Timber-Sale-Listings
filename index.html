@@ -49,6 +49,69 @@
             background: linear-gradient(135deg, #A0522D 0%, #8B4513 100%);
         }
 
+        .submission-banner {
+            background: linear-gradient(135deg, #1e5a8e 0%, #2980b9 100%);
+            color: white;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .submission-banner h4 {
+            margin-bottom: 1rem;
+            font-weight: bold;
+        }
+
+        .submission-banner p {
+            margin-bottom: 1rem;
+            font-size: 1.05rem;
+        }
+
+        .submission-links {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .submission-link {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .submission-link:hover {
+            background: rgba(255, 255, 255, 0.3);
+            color: white;
+            text-decoration: none;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .submission-link.dev-badge {
+            position: relative;
+        }
+
+        .submission-link.dev-badge::after {
+            content: "Coming Soon";
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #ffc107;
+            color: #333;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+
         .bid-info-panel {
             background: #fff3cd;
             border: 2px solid #ffeaa7;
@@ -66,7 +129,6 @@
             text-align: center;
         }
 
-        /* Status toggle controls */
         .status-toggle-panel {
             background: white;
             border-radius: 8px;
@@ -157,7 +219,6 @@
             border-color: #495057;
         }
         
-        /* Custom popup styles for smaller, scrollable popups */
         .leaflet-popup {
             max-width: 350px !important;
             max-height: 300px !important;
@@ -176,11 +237,6 @@
             line-height: 1.4 !important;
         }
         
-        .leaflet-popup-scrolled {
-            padding-right: 8px;
-        }
-        
-        /* Auto-update notification styles */
         .update-notification {
             position: fixed;
             top: 20px;
@@ -213,7 +269,6 @@
             align-items: center;
         }
         
-        /* Rest of existing styles */
         .main-container { max-width: 1400px; margin: 0 auto; padding: 0 1rem; }
         .map-container { height: 600px; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 2rem; }
         #map { height: 100%; width: 100%; }
@@ -262,7 +317,6 @@
             color: #721c24;
         }
 
-        /* URL column styling */
         .url-cell {
             max-width: 150px;
             overflow: hidden;
@@ -327,7 +381,6 @@
             color: #2d5016;
         }
 
-        /* Status badge in table */
         .status-badge {
             padding: 0.25rem 0.5rem;
             border-radius: 4px;
@@ -345,6 +398,41 @@
             background: #f8d7da;
             color: #721c24;
         }
+
+        /* Custom marker styles */
+        .timber-marker {
+            background: #28a745;
+            border: 3px solid #2d5016;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        .timber-marker.closed {
+            background: #6c757d;
+            border-color: #495057;
+        }
+
+        .timber-marker-pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(40, 167, 69, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(40, 167, 69, 0);
+            }
+        }
     </style>
 </head>
 <body>
@@ -360,6 +448,20 @@
         <div class="company-banner" onclick="window.open('https://legacyforestmanagement.com/timber-for-sale/', '_blank')">
             <h3>🌳 Legacy Forest Management - Timber For Sale 🌳</h3>
             <p>Click here to visit our timber sales website</p>
+        </div>
+
+        <!-- Timber Sale Submission Banner -->
+        <div class="submission-banner">
+            <h4>📝 Have Timber to Sell?</h4>
+            <p>We can help you manage and market your timber sale! Submit your timber sale information to us for professional administration and listing.</p>
+            <div class="submission-links">
+                <a href="https://legacyforestmanagement.com/services/timber-sales/" target="_blank" class="submission-link">
+                    📋 Learn About Our Timber Sale Services
+                </a>
+                <a href="https://docs.google.com/forms/d/1rrgWnr935DSkSxkvBoC-0G72P0oCQqVPmSGqskPaYcY/edit" target="_blank" class="submission-link dev-badge">
+                    🌲 Timber Sale Area Upload Portal
+                </a>
+            </div>
         </div>
 
         <!-- Bid Information Panel -->
@@ -502,10 +604,12 @@
         // Initialize map and global variables
         let map = L.map('map').setView([44.0, -90.5], 8);
         let saleAreasLayer = null;
+        let markerLayer = null;
         let currentData = [];
         let filteredData = [];
         let lastUpdateTime = null;
         let showClosedSales = false;
+        const ZOOM_THRESHOLD = 11; // Switch from markers to polygons at this zoom level
         
         // Base map layers
         let baseLayers = {
@@ -525,6 +629,11 @@
         
         // Add default base layer
         baseLayers['Street Map'].addTo(map);
+        
+        // Listen to zoom changes
+        map.on('zoomend', function() {
+            updateMapDisplay();
+        });
         
         // Initialize DataTable
         let dataTable = $('#saleAreasTable').DataTable({
@@ -606,36 +715,52 @@
             updateStatistics(filteredData);
         }
 
+        function getPolygonCenter(coordinates) {
+            // Calculate centroid of polygon
+            let sumLat = 0, sumLng = 0, count = 0;
+            
+            coordinates[0].forEach(coord => {
+                sumLng += coord[0];
+                sumLat += coord[1];
+                count++;
+            });
+            
+            return [sumLat / count, sumLng / count];
+        }
+
         function updateMapDisplay() {
-            // Clear existing layer
+            const currentZoom = map.getZoom();
+            const showMarkers = currentZoom < ZOOM_THRESHOLD;
+            
+            // Clear existing layers
             if (saleAreasLayer) {
                 map.removeLayer(saleAreasLayer);
+                saleAreasLayer = null;
+            }
+            if (markerLayer) {
+                map.removeLayer(markerLayer);
+                markerLayer = null;
             }
 
-            // Create filtered GeoJSON
-            const filteredGeoJSON = {
-                type: "FeatureCollection",
-                features: filteredData
-            };
-
-            // Add filtered data to map
-            saleAreasLayer = L.geoJSON(filteredGeoJSON, {
-                style: function(feature) {
+            if (showMarkers) {
+                // Show markers when zoomed out
+                markerLayer = L.layerGroup();
+                
+                filteredData.forEach(feature => {
+                    const center = getPolygonCenter(feature.geometry.coordinates);
                     const status = (feature.properties.status || 'active').toLowerCase();
                     const isActive = status === 'active';
                     
-                    return {
-                        fillColor: isActive ? '#28a745' : '#6c757d',
-                        weight: 2,
-                        opacity: 1,
-                        color: isActive ? '#2d5016' : '#495057',
-                        dashArray: isActive ? '3' : '8, 5',
-                        fillOpacity: isActive ? 0.6 : 0.4
-                    };
-                },
-                onEachFeature: function(feature, layer) {
+                    const icon = L.divIcon({
+                        className: 'custom-div-icon',
+                        html: `<div class="timber-marker ${isActive ? 'timber-marker-pulse' : ''} ${!isActive ? 'closed' : ''}">🌲</div>`,
+                        iconSize: [30, 30],
+                        iconAnchor: [15, 15]
+                    });
+                    
+                    const marker = L.marker(center, { icon: icon });
                     const popupContent = createPopupContent(feature.properties);
-                    layer.bindPopup(popupContent, {
+                    marker.bindPopup(popupContent, {
                         maxWidth: 350,
                         maxHeight: 300,
                         closeButton: true,
@@ -643,20 +768,57 @@
                         keepInView: true
                     });
                     
-                    layer.on('click', function() {
-                        map.fitBounds(layer.getBounds());
+                    marker.on('click', function() {
+                        // Zoom in to show polygon
+                        map.setView(center, ZOOM_THRESHOLD + 1);
                     });
+                    
+                    markerLayer.addLayer(marker);
+                });
+                
+                if (document.getElementById('timberAreas').checked) {
+                    markerLayer.addTo(map);
                 }
-            });
+            } else {
+                // Show polygons when zoomed in
+                const filteredGeoJSON = {
+                    type: "FeatureCollection",
+                    features: filteredData
+                };
 
-            // Add to map if timber areas checkbox is checked
-            if (document.getElementById('timberAreas').checked) {
-                saleAreasLayer.addTo(map);
-            }
+                saleAreasLayer = L.geoJSON(filteredGeoJSON, {
+                    style: function(feature) {
+                        const status = (feature.properties.status || 'active').toLowerCase();
+                        const isActive = status === 'active';
+                        
+                        return {
+                            fillColor: isActive ? '#28a745' : '#6c757d',
+                            weight: 2,
+                            opacity: 1,
+                            color: isActive ? '#2d5016' : '#495057',
+                            dashArray: isActive ? '3' : '8, 5',
+                            fillOpacity: isActive ? 0.6 : 0.4
+                        };
+                    },
+                    onEachFeature: function(feature, layer) {
+                        const popupContent = createPopupContent(feature.properties);
+                        layer.bindPopup(popupContent, {
+                            maxWidth: 350,
+                            maxHeight: 300,
+                            closeButton: true,
+                            autoPan: true,
+                            keepInView: true
+                        });
+                        
+                        layer.on('click', function() {
+                            map.fitBounds(layer.getBounds());
+                        });
+                    }
+                });
 
-            // Fit map to data bounds if there's data
-            if (filteredData.length > 0) {
-                map.fitBounds(saleAreasLayer.getBounds());
+                if (document.getElementById('timberAreas').checked) {
+                    saleAreasLayer.addTo(map);
+                }
             }
         }
         
@@ -689,12 +851,13 @@
             // Timber areas toggle
             document.getElementById('timberAreas').addEventListener('change', function() {
                 if (this.checked) {
-                    if (saleAreasLayer) {
-                        saleAreasLayer.addTo(map);
-                    }
+                    updateMapDisplay();
                 } else {
                     if (saleAreasLayer && map.hasLayer(saleAreasLayer)) {
                         map.removeLayer(saleAreasLayer);
+                    }
+                    if (markerLayer && map.hasLayer(markerLayer)) {
+                        map.removeLayer(markerLayer);
                     }
                 }
             });
@@ -905,13 +1068,22 @@
         }
         
         function zoomToFeature(index) {
-            if (filteredData[index] && saleAreasLayer) {
+            if (filteredData[index]) {
                 const feature = filteredData[index];
-                const layer = saleAreasLayer.getLayers().find(l => l.feature === feature);
-                if (layer) {
-                    map.fitBounds(layer.getBounds());
-                    layer.openPopup();
-                }
+                const center = getPolygonCenter(feature.geometry.coordinates);
+                
+                // Zoom in to show the polygon and open popup
+                map.setView(center, ZOOM_THRESHOLD + 2);
+                
+                // Wait for map to update, then find and open the popup
+                setTimeout(() => {
+                    if (saleAreasLayer) {
+                        const layer = saleAreasLayer.getLayers().find(l => l.feature === feature);
+                        if (layer) {
+                            layer.openPopup();
+                        }
+                    }
+                }, 300);
             }
         }
     </script>
