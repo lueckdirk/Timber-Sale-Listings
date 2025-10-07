@@ -129,7 +129,7 @@
             text-align: center;
         }
 
-        .status-toggle-panel {
+        .filters-panel {
             background: white;
             border-radius: 8px;
             padding: 1.5rem;
@@ -137,56 +137,50 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
-        .status-toggle {
+        .filter-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .filter-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .filter-label {
+            font-weight: bold;
+            color: #2d5016;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-input {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .filter-checkbox-group {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            margin-top: 0.5rem;
+        }
+
+        .filter-checkbox {
             display: flex;
             align-items: center;
-            gap: 1rem;
-            margin-bottom: 1rem;
+            gap: 0.5rem;
         }
 
-        .toggle-switch {
-            position: relative;
-            display: inline-block;
-            width: 60px;
-            height: 34px;
-        }
-
-        .toggle-switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #ccc;
-            transition: .4s;
-            border-radius: 34px;
-        }
-
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 26px;
-            width: 26px;
-            left: 4px;
-            bottom: 4px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
-        }
-
-        input:checked + .slider {
-            background-color: #4a7c24;
-        }
-
-        input:checked + .slider:before {
-            transform: translateX(26px);
+        .filter-buttons {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
         }
 
         .status-legend {
@@ -399,7 +393,6 @@
             color: #721c24;
         }
 
-        /* Custom marker styles */
         .timber-marker {
             background: #28a745;
             border: 3px solid #2d5016;
@@ -432,6 +425,17 @@
             100% {
                 box-shadow: 0 0 0 0 rgba(40, 167, 69, 0);
             }
+        }
+
+        .filter-count {
+            display: inline-block;
+            background: #4a7c24;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            margin-left: 0.5rem;
         }
     </style>
 </head>
@@ -490,17 +494,48 @@
             <span>📅 Data last updated: <span id="updateTime"></span></span>
         </div>
 
-        <!-- Status Toggle Panel -->
-        <div class="status-toggle-panel">
-            <h5>📊 Sales Display Options</h5>
-            <div class="status-toggle">
-                <span><strong>Show Active Sales Only</strong></span>
-                <label class="toggle-switch">
-                    <input type="checkbox" id="showClosedSales">
-                    <span class="slider"></span>
-                </label>
-                <span><strong>Include Closed Sales</strong></span>
+        <!-- Enhanced Filters Panel -->
+        <div class="filters-panel">
+            <h5>🔍 Filter Timber Sales <span id="filterCount" class="filter-count">0 results</span></h5>
+            
+            <div class="filter-section">
+                <label class="filter-label">Status</label>
+                <div class="filter-checkbox-group">
+                    <div class="filter-checkbox">
+                        <input type="checkbox" id="filterActive" value="active" checked>
+                        <label for="filterActive">Active Sales</label>
+                    </div>
+                    <div class="filter-checkbox">
+                        <input type="checkbox" id="filterClosed" value="closed">
+                        <label for="filterClosed">Closed Sales</label>
+                    </div>
+                </div>
             </div>
+
+            <div class="filter-section">
+                <label class="filter-label">Size (Acres)</label>
+                <div class="filter-group">
+                    <input type="number" id="minAcres" class="form-control filter-input" placeholder="Min acres" min="0">
+                    <span>to</span>
+                    <input type="number" id="maxAcres" class="form-control filter-input" placeholder="Max acres" min="0">
+                </div>
+            </div>
+
+            <div class="filter-section">
+                <label class="filter-label">Location</label>
+                <input type="text" id="locationFilter" class="form-control" placeholder="Search by location (e.g., Monroe, Vernon)">
+            </div>
+
+            <div class="filter-section">
+                <label class="filter-label">Species</label>
+                <input type="text" id="speciesFilter" class="form-control" placeholder="Search by species (e.g., Oak, Maple)">
+            </div>
+
+            <div class="filter-buttons">
+                <button class="btn btn-forest" onclick="applyFilters()">Apply Filters</button>
+                <button class="btn btn-outline-secondary" onclick="resetFilters()">Reset All</button>
+            </div>
+
             <div class="status-legend">
                 <div class="legend-item">
                     <div class="legend-color legend-active"></div>
@@ -601,17 +636,14 @@
     </div>
 
     <script>
-        // Initialize map and global variables
         let map = L.map('map').setView([44.0, -90.5], 8);
         let saleAreasLayer = null;
         let markerLayer = null;
         let currentData = [];
         let filteredData = [];
         let lastUpdateTime = null;
-        let showClosedSales = false;
-        const ZOOM_THRESHOLD = 11; // Switch from markers to polygons at this zoom level
+        const ZOOM_THRESHOLD = 11;
         
-        // Base map layers
         let baseLayers = {
             'Street Map': L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '© OpenStreetMap contributors',
@@ -627,22 +659,19 @@
             })
         };
         
-        // Add default base layer
         baseLayers['Street Map'].addTo(map);
         
-        // Listen to zoom changes
         map.on('zoomend', function() {
             updateMapDisplay();
         });
         
-        // Initialize DataTable
         let dataTable = $('#saleAreasTable').DataTable({
             responsive: true,
             pageLength: 10,
             order: [[0, 'asc']],
             columnDefs: [
                 {
-                    targets: [2], // Status column
+                    targets: [2],
                     render: function(data, type, row) {
                         if (type === 'display') {
                             const statusClass = data.toLowerCase() === 'active' ? 'active' : 'closed';
@@ -653,13 +682,13 @@
                     }
                 },
                 { 
-                    targets: [3], // Acres column
+                    targets: [3],
                     render: function(data) { 
                         return parseFloat(data || 0).toLocaleString() + ' ac'; 
                     }
                 },
                 {
-                    targets: [8], // Prospectus column
+                    targets: [8],
                     render: function(data, type, row) {
                         if (!data || data === 'N/A') {
                             return '<span class="text-muted">None</span>';
@@ -670,62 +699,94 @@
                         return data;
                     }
                 },
-                { targets: [9], orderable: false } // Actions column
+                { targets: [9], orderable: false }
             ]
         });
         
-        // Data will be loaded from external GeoJSON file
         let timberSaleData = null;
         
-        // Initialize application
         document.addEventListener('DOMContentLoaded', function() {
             loadDataFromFile();
             setupLayerControls();
-            setupStatusToggle();
+            setupFilterListeners();
         });
 
-        function setupStatusToggle() {
-            const toggleCheckbox = document.getElementById('showClosedSales');
-            toggleCheckbox.addEventListener('change', function() {
-                showClosedSales = this.checked;
-                updateDisplayedData();
+        function setupFilterListeners() {
+            document.getElementById('filterActive').addEventListener('change', applyFilters);
+            document.getElementById('filterClosed').addEventListener('change', applyFilters);
+            
+            ['minAcres', 'maxAcres', 'locationFilter', 'speciesFilter'].forEach(id => {
+                const element = document.getElementById(id);
+                if (element.type === 'number') {
+                    element.addEventListener('change', applyFilters);
+                } else {
+                    element.addEventListener('input', debounce(applyFilters, 500));
+                }
             });
         }
 
-        function updateDisplayedData() {
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        function applyFilters() {
             if (!timberSaleData) return;
 
-            // Filter data based on toggle setting
-            if (showClosedSales) {
-                filteredData = timberSaleData.features; // Show all
-            } else {
-                filteredData = timberSaleData.features.filter(feature => {
-                    const status = (feature.properties.status || 'active').toLowerCase();
-                    return status === 'active';
-                });
-            }
+            const showActive = document.getElementById('filterActive').checked;
+            const showClosed = document.getElementById('filterClosed').checked;
+            const minAcres = parseFloat(document.getElementById('minAcres').value) || 0;
+            const maxAcres = parseFloat(document.getElementById('maxAcres').value) || Infinity;
+            const locationSearch = document.getElementById('locationFilter').value.toLowerCase();
+            const speciesSearch = document.getElementById('speciesFilter').value.toLowerCase();
 
-            // Update map
+            filteredData = timberSaleData.features.filter(feature => {
+                const props = feature.properties;
+                const status = (props.status || 'active').toLowerCase();
+                const acres = parseFloat(props.acres || 0);
+                const location = (props.location || '').toLowerCase();
+                const species = (props.species || '').toLowerCase();
+
+                const statusMatch = (status === 'active' && showActive) || (status !== 'active' && showClosed);
+                const acresMatch = acres >= minAcres && acres <= maxAcres;
+                const locationMatch = !locationSearch || location.includes(locationSearch);
+                const speciesMatch = !speciesSearch || species.includes(speciesSearch);
+
+                return statusMatch && acresMatch && locationMatch && speciesMatch;
+            });
+
+            document.getElementById('filterCount').textContent = `${filteredData.length} result${filteredData.length !== 1 ? 's' : ''}`;
+
             updateMapDisplay();
-            
-            // Update table
             populateDataTable(filteredData);
-            
-            // Update statistics
             updateStatistics(filteredData);
+        }
+
+        function resetFilters() {
+            document.getElementById('filterActive').checked = true;
+            document.getElementById('filterClosed').checked = false;
+            document.getElementById('minAcres').value = '';
+            document.getElementById('maxAcres').value = '';
+            document.getElementById('locationFilter').value = '';
+            document.getElementById('speciesFilter').value = '';
+            applyFilters();
         }
 
         function getPolygonCenter(coordinates) {
             try {
-                // Handle both Polygon and MultiPolygon
                 let coords;
                 
                 if (coordinates[0] && Array.isArray(coordinates[0])) {
                     if (Array.isArray(coordinates[0][0]) && Array.isArray(coordinates[0][0][0])) {
-                        // MultiPolygon: [[[lng, lat], [lng, lat]]]
                         coords = coordinates[0][0];
                     } else {
-                        // Polygon: [[lng, lat], [lng, lat]]
                         coords = coordinates[0];
                     }
                 } else {
@@ -753,7 +814,7 @@
                 
             } catch (error) {
                 console.error('Error calculating polygon center:', error, coordinates);
-                return [44.0, -90.5]; // Default fallback to Wisconsin
+                return [44.0, -90.5];
             }
         }
 
@@ -761,7 +822,6 @@
             const currentZoom = map.getZoom();
             const showMarkers = currentZoom < ZOOM_THRESHOLD;
             
-            // Clear existing layers
             if (saleAreasLayer) {
                 map.removeLayer(saleAreasLayer);
                 saleAreasLayer = null;
@@ -772,7 +832,6 @@
             }
 
             if (showMarkers) {
-                // Show markers when zoomed out
                 markerLayer = L.layerGroup();
                 
                 filteredData.forEach(feature => {
@@ -789,6 +848,7 @@
                     
                     const marker = L.marker(center, { icon: icon });
                     const popupContent = createPopupContent(feature.properties);
+                    
                     marker.bindPopup(popupContent, {
                         maxWidth: 350,
                         maxHeight: 300,
@@ -797,8 +857,11 @@
                         keepInView: true
                     });
                     
+                    marker.on('mouseover', function() {
+                        this.openPopup();
+                    });
+                    
                     marker.on('click', function() {
-                        // Zoom in to show polygon
                         map.setView(center, ZOOM_THRESHOLD + 1);
                     });
                     
@@ -809,7 +872,6 @@
                     markerLayer.addTo(map);
                 }
             } else {
-                // Show polygons when zoomed in
                 const filteredGeoJSON = {
                     type: "FeatureCollection",
                     features: filteredData
@@ -839,6 +901,18 @@
                             keepInView: true
                         });
                         
+                        layer.on('mouseover', function(e) {
+                            layer.setStyle({
+                                weight: 4,
+                                fillOpacity: 0.8
+                            });
+                            this.openPopup();
+                        });
+                        
+                        layer.on('mouseout', function(e) {
+                            saleAreasLayer.resetStyle(layer);
+                        });
+                        
                         layer.on('click', function() {
                             map.fitBounds(layer.getBounds());
                         });
@@ -852,17 +926,14 @@
         }
         
         function setupLayerControls() {
-            // Base layer radio buttons
             document.querySelectorAll('input[name="baseLayer"]').forEach(radio => {
                 radio.addEventListener('change', function() {
-                    // Remove current base layer
                     Object.values(baseLayers).forEach(layer => {
                         if (map.hasLayer(layer)) {
                             map.removeLayer(layer);
                         }
                     });
                     
-                    // Add selected base layer
                     switch(this.value) {
                         case 'osm':
                             baseLayers['Street Map'].addTo(map);
@@ -877,7 +948,6 @@
                 });
             });
             
-            // Timber areas toggle
             document.getElementById('timberAreas').addEventListener('change', function() {
                 if (this.checked) {
                     updateMapDisplay();
@@ -910,7 +980,6 @@
                 
                 timberSaleData = await response.json();
                 
-                // Validate the data
                 if (!timberSaleData || !timberSaleData.features) {
                     throw new Error('Invalid GeoJSON format - missing features array');
                 }
@@ -923,14 +992,13 @@
             } catch (error) {
                 console.error('Failed to load data from file:', error);
                 showNotification(`Failed to load data: ${error.message}. Please ensure the data/current.geojson file exists.`, 'warning');
-                loadFallbackData(); // Load basic sample data if file loading fails
+                loadFallbackData();
             }
             
             showLoading(false);
         }
         
         function loadFallbackData() {
-            // Fallback sample data in case the external file fails to load
             timberSaleData = {
                 "type": "FeatureCollection",
                 "features": [
@@ -997,7 +1065,7 @@
             }
             
             currentData = timberSaleData.features;
-            updateDisplayedData();
+            applyFilters();
         }
         
         function updateStatistics(features) {
@@ -1101,10 +1169,8 @@
                 const feature = filteredData[index];
                 const center = getPolygonCenter(feature.geometry.coordinates);
                 
-                // Zoom in to show the polygon and open popup
                 map.setView(center, ZOOM_THRESHOLD + 2);
                 
-                // Wait for map to update, then find and open the popup
                 setTimeout(() => {
                     if (saleAreasLayer) {
                         const layer = saleAreasLayer.getLayers().find(l => l.feature === feature);
